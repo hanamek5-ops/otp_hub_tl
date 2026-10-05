@@ -4,15 +4,25 @@ import { redis, KEYS } from '../lib/redis.js';
 export default async function handler(req, res) {
     const results = {};
     
-    // 1. Test Redis
-    try {
-        const ping = await redis.ping();
-        const lpushRes = await redis.lpush('otphub:test_list', 'item_' + Date.now());
-        const listItems = await redis.lrange('otphub:test_list', 0, 5);
-        results.redis = { ok: true, ping, lpushRes, listItems };
-    } catch (e) {
-        results.redis = { ok: false, error: e.message };
+    // 1. Test Redis permissions
+    const perms = {};
+    for (const cmd of ['ping', 'get', 'set', 'hget', 'hset', 'hgetall', 'lpush', 'lrange', 'del']) {
+        try {
+            if (cmd === 'ping') await redis.ping();
+            else if (cmd === 'set') await redis.set('otphub:test_key', '1');
+            else if (cmd === 'get') await redis.get('otphub:test_key');
+            else if (cmd === 'hset') await redis.hset('otphub:test_h', { k: 'v' });
+            else if (cmd === 'hget') await redis.hget('otphub:test_h', 'k');
+            else if (cmd === 'hgetall') await redis.hgetall('otphub:test_h');
+            else if (cmd === 'lpush') await redis.lpush('otphub:test_l', '1');
+            else if (cmd === 'lrange') await redis.lrange('otphub:test_l', 0, 1);
+            else if (cmd === 'del') await redis.del('otphub:test_key');
+            perms[cmd] = 'OK';
+        } catch (e) {
+            perms[cmd] = e.message;
+        }
     }
+    results.redis_permissions = perms;
 
     // 2. Test Telegram sendMessage
     try {
