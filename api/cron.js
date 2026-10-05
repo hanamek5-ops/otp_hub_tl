@@ -10,8 +10,14 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default async function handler(req, res) {
     // Chống xung đột giữa các lần gọi Cron
-    const acquired = await redis.set(KEYS.CRON_LOCK, 'locked', { nx: true, ex: 55 });
-    if (!acquired) {
+    let acquired = true;
+    try {
+        acquired = await redis.set(KEYS.CRON_LOCK, 'locked', { nx: true, ex: 55 });
+    } catch (e) {
+        console.warn('Cron lock warning:', e.message);
+    }
+
+    if (acquired === false || acquired === null) {
         return res.status(200).json({ status: 'Another cron cycle is currently executing' });
     }
 
@@ -29,10 +35,10 @@ export default async function handler(req, res) {
                 await sleep(10000); // Tạm dừng đúng 10 giây
             }
         }
-        await redis.del(KEYS.CRON_LOCK);
+        try { await redis.del(KEYS.CRON_LOCK); } catch (_) {}
         return res.status(200).json({ success: true, cyclesExecuted: count });
     } catch (err) {
-        await redis.del(KEYS.CRON_LOCK);
+        try { await redis.del(KEYS.CRON_LOCK); } catch (_) {}
         return res.status(500).json({ error: err.message });
     }
 }
