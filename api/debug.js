@@ -30,6 +30,8 @@ export default async function handler(req, res) {
         const mgr = new OTPHubManager(bot);
         const testUser = await mgr.getUser({ id: 123456789, first_name: 'Test' });
         results.manager = { ok: true, user: testUser };
+        const allUsers = await redis.hgetall(KEYS.USERS);
+        results.all_users = allUsers;
     } catch (e) {
         results.manager = { ok: false, error: e.message, stack: e.stack?.split('\n').slice(0, 3) };
     }
