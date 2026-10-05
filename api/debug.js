@@ -7,7 +7,9 @@ export default async function handler(req, res) {
     // 1. Test Redis
     try {
         const ping = await redis.ping();
-        results.redis = { ok: true, ping };
+        const lpushRes = await redis.lpush('otphub:test_list', 'item_' + Date.now());
+        const listItems = await redis.lrange('otphub:test_list', 0, 5);
+        results.redis = { ok: true, ping, lpushRes, listItems };
     } catch (e) {
         results.redis = { ok: false, error: e.message };
     }
