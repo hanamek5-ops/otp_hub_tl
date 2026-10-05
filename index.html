@@ -231,15 +231,22 @@
             const userId = document.getElementById('add-uid').value;
             const amount = document.getElementById('add-amt').value;
             if (!userId || !amount) return alert('Vui lòng điền đủ thông tin');
-            const res = await fetch('/api/admin/users', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ userId, amount })
-            });
-            if (res.ok) {
-                alert('Cập nhật ví thành công');
-                loadDashboard();
-            } else alert('Lỗi khi cập nhật ví (Kiểm tra lại User ID)');
+            try {
+                const res = await fetch('/api/admin/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ userId, amount })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Cập nhật ví thành công! Số dư mới: ' + Number(data.balance).toLocaleString('vi-VN') + ' đ');
+                    loadDashboard();
+                } else {
+                    alert('Lỗi khi cập nhật ví: ' + (data.error || 'Kiểm tra lại User ID hoặc Quyền Redis'));
+                }
+            } catch (e) {
+                alert('Lỗi kết nối: ' + e.message);
+            }
         }
     </script>
 </body>

@@ -12,11 +12,28 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-        const { userId, amount } = req.body;
-        const user = await redis.hget(KEYS.USERS, String(userId));
-        if (!user) return res.status(404).json({ error: 'Không tìm thấy user' });
-        user.balance += Number(amount);
-        await redis.hset(KEYS.USERS, { [user.id]: user });
-        return res.status(200).json(user);
+        try {
+            const { userId, amount } = req.body;
+            const uid = String(userId).trim();
+            if (!uid) return res.status(400).json({ error: 'User ID không hợp lệ' });
+
+            let user = await redis.hget(KEYS.USERS, uid);
+            if (!user) {
+                // Tự động tạo user nếu chưa có trong DB
+                user = {
+                    id: uid,
+                    name: `User ${uid}`,
+                    username: '',
+                    balance: 0,
+                    created_at: new Date().toISOString()
+                };
+            }
+            user.balance = (Number(user.balance) || 0) + Number(amount);
+            await redis.hset(KEYS.USERS, { [user.id]: user });
+            return res.status(200).json(user);
+        } catch (err) {
+            console.error('Update balance error:', err);
+            return res.status(500).json({ error: err.message });
+        }
     }
 }
