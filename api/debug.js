@@ -32,6 +32,10 @@ export default async function handler(req, res) {
         results.manager = { ok: true, user: testUser };
         const allUsers = await redis.hgetall(KEYS.USERS);
         results.all_users = allUsers;
+        const logs = await redis.lrange('otphub:webhook_logs', 0, 10);
+        results.webhook_logs = (logs || []).map(l => { try { return JSON.parse(l); } catch { return l; } });
+        const errors = await redis.lrange('otphub:webhook_errors', 0, 10);
+        results.webhook_errors = (errors || []).map(e => { try { return JSON.parse(e); } catch { return e; } });
     } catch (e) {
         results.manager = { ok: false, error: e.message, stack: e.stack?.split('\n').slice(0, 3) };
     }

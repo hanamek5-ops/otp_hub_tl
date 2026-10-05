@@ -1,5 +1,6 @@
-import { TelegramBot } from '../lib/telegram.js';
+import { TelegramBot, escapeHtml } from '../lib/telegram.js';
 import { OTPHubManager, money, formatPhoneDisplay } from '../lib/manager.js';
+import { redis } from '../lib/redis.js';
 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN);
 const mgr = new OTPHubManager(bot);
@@ -7,7 +8,13 @@ const mgr = new OTPHubManager(bot);
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(200).send('Bot Running');
     let update = req.body;
-    if (typeof update === 'string') {
+    if (Buffer.isBuffer(update)) {
+        try {
+            update = JSON.parse(update.toString('utf8'));
+        } catch (e) {
+            console.error('Error parsing Buffer body:', e);
+        }
+    } else if (typeof update === 'string') {
         try {
             update = JSON.parse(update);
         } catch (e) {
@@ -15,6 +22,18 @@ export default async function handler(req, res) {
         }
     }
     if (!update) return res.status(200).send('No update');
+
+    // Debug logging to Redis
+    try {
+        await redis.lpush('otphub:webhook_logs', JSON.stringify({
+            time: new Date().toISOString(),
+            update_id: update.update_id,
+            type: update.message ? 'message' : (update.callback_query ? 'callback' : 'other'),
+            from: update.message?.from || update.callback_query?.from,
+            text: update.message?.text || update.callback_query?.data
+        }));
+        await redis.ltrim('otphub:webhook_logs', 0, 19);
+    } catch (_) {}
 
     try {
         // 1. Xử lý Message Text
@@ -34,8 +53,9 @@ export default async function handler(req, res) {
             }
 
             if (text.startsWith('/start') || text.toLowerCase() === 'menu') {
+                const displayName = escapeHtml(user.name);
                 const welcomeText = (
-                    `👋 <b>Xin chào, ${user.name}!</b>\n` +
+                    `👋 <b>Xin chào, ${displayName}!</b>\n` +
                     `Chào mừng bạn đến với <b>OTP HUB GSM</b> ⚡\n` +
                     `━━━━━━━━━━━━━━━━━━━━\n` +
                     `👤 ID Telegram: <code>${user.id}</code>\n` +
@@ -303,6 +323,14 @@ export default async function handler(req, res) {
         }
     } catch (err) {
         console.error('Webhook Error:', err);
+        try {
+            await redis.lpush('otphub:webhook_errors', JSON.stringify({
+                time: new Date().toISOString(),
+                error: err.message,
+                stack: err.stack
+            }));
+            await redis.ltrim('otphub:webhook_errors', 0, 19);
+        } catch (_) {}
     }
 
     return res.status(200).json({ ok: true });
