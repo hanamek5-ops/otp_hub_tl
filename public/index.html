@@ -3,243 +3,391 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>OTP Hub - Web Admin Control</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTPHub GSM — Quản Trị Hệ Thống Chuyên Nghiệp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/admin/css/style.css">
 </head>
 
-<body class="bg-slate-900 text-white min-h-screen">
-    <div id="login-box" class="max-w-md mx-auto mt-24 p-6 bg-slate-800 rounded-lg shadow border border-slate-700">
-        <h2 class="text-xl font-bold mb-4 text-center">Đăng nhập Admin Dashboard</h2>
-        <input type="password" id="admin-pass" placeholder="Nhập ADMIN_SECRET_KEY"
-            class="w-full p-2.5 rounded bg-slate-700 border border-slate-600 mb-4 focus:outline-none">
-        <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-500 py-2.5 rounded font-bold">Vào bảng điều
-            khiển</button>
+<body>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-badge">⚡</div>
+            <div class="logo-text">
+                <h2>OTPHub GSM</h2>
+                <span>Bảng Quản Trị</span>
+            </div>
+        </div>
+
+        <nav class="nav-links">
+            <a class="nav-item active" href="#overview" data-tab="overview">
+                <span class="nav-icon">📊</span>
+                <span>Tổng quan</span>
+            </a>
+            <a class="nav-item" href="#users" data-tab="users">
+                <span class="nav-icon">👥</span>
+                <span>Quản lý Khách hàng</span>
+            </a>
+            <a class="nav-item" href="#services" data-tab="services">
+                <span class="nav-icon">⚡</span>
+                <span>Bảng giá & Dịch vụ</span>
+            </a>
+            <a class="nav-item" href="#modems" data-tab="modems">
+                <span class="nav-icon">📱</span>
+                <span>Cổng SIM & Modem</span>
+            </a>
+            <a class="nav-item" href="#sessions" data-tab="sessions">
+                <span class="nav-icon">📜</span>
+                <span>Lịch sử Thuê & OTP</span>
+            </a>
+            <a class="nav-item" href="#settings" data-tab="settings">
+                <span class="nav-icon">⚙️</span>
+                <span>Cài đặt Hệ thống</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <div class="avatar">AD</div>
+                <div class="user-info">
+                    <div class="name">Quản Trị Viên</div>
+                    <div class="role">Master Admin</div>
+                </div>
+            </div>
+            <button class="btn btn-secondary" onclick="handleLogout()" style="padding: 6px; font-size: 14px;" title="Đăng xuất">🚪</button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+        <!-- Topbar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1 id="topbar-page-title">Tổng quan Hệ thống</h1>
+            </div>
+            <div class="topbar-right">
+                <div class="status-indicator">
+                    <div class="pulse-dot"></div>
+                    <span>Hệ thống Hoạt động</span>
+                </div>
+                <button class="btn btn-primary" onclick="openBalanceModal()">
+                    ➕ Nạp tiền nhanh
+                </button>
+            </div>
+        </header>
+
+        <!-- Pages View Area -->
+        <main class="content-area">
+
+            <!-- 1. TAB: OVERVIEW -->
+            <section class="page-tab active" id="tab-overview">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <div class="title">TỔNG KHÁCH HÀNG</div>
+                            <div class="value" id="stat-total-users">0</div>
+                            <div class="sub">Tài khoản Telegram</div>
+                        </div>
+                        <div class="stat-icon icon-blue">👥</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <div class="title">TỔNG SỐ DƯ CÁC VÍ</div>
+                            <div class="value" id="stat-total-balance">0 đ</div>
+                            <div class="sub">Số dư khả dụng</div>
+                        </div>
+                        <div class="stat-icon icon-green">💰</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <div class="title">DOANH THU OTP</div>
+                            <div class="value" id="stat-revenue">0 đ</div>
+                            <div class="sub">Phiên nhận thành công</div>
+                        </div>
+                        <div class="stat-icon icon-purple">📈</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <div class="title">TỶ LỆ THÀNH CÔNG</div>
+                            <div class="value" id="stat-success-rate">0 / 0</div>
+                            <div class="sub">Tự động hoàn tiền 100%</div>
+                        </div>
+                        <div class="stat-icon icon-amber">🎯</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">⚡ Các phiên thuê số mới nhất</div>
+                            <div class="card-desc">Cập nhật trực tiếp các đơn thuê số và mã OTP gần đây</div>
+                        </div>
+                        <a href="#sessions" class="btn btn-secondary" style="font-size: 12px;">Xem tất cả</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mã đơn</th>
+                                    <th>Khách hàng (ID)</th>
+                                    <th>Dịch vụ</th>
+                                    <th>Số điện thoại</th>
+                                    <th>Mã OTP</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thời gian</th>
+                                </tr>
+                            </thead>
+                            <tbody id="overview-recent-sessions">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: var(--text-subtle);">Đang tải dữ liệu...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. TAB: USERS -->
+            <section class="page-tab" id="tab-users">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">👥 Quản lý Khách hàng & Số dư</div>
+                            <div class="card-desc">Tìm kiếm, kiểm tra số dư và nạp/trừ tiền ví người dùng</div>
+                        </div>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <span class="badge badge-secondary" id="user-count-badge">0 tài khoản</span>
+                            <div class="search-box">
+                                <span>🔍</span>
+                                <input type="text" id="user-search-input" placeholder="Tìm ID, Tên, @username..." onkeyup="filterUsers()">
+                            </div>
+                            <button class="btn btn-primary" onclick="openBalanceModal()">+ Nạp tiền</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID Telegram</th>
+                                    <th>Họ và tên</th>
+                                    <th>Username</th>
+                                    <th>Số dư ví</th>
+                                    <th>Ngày tham gia</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; color: var(--text-subtle);">Đang tải danh sách người dùng...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. TAB: SERVICES -->
+            <section class="page-tab" id="tab-services">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">⚡ Bảng giá & Trạng thái Dịch vụ</div>
+                            <div class="card-desc">Bật/tắt dịch vụ và điều chỉnh giá thuê OTP theo ý muốn</div>
+                        </div>
+                        <button class="btn btn-secondary" onclick="loadServices()">🔄 Làm mới</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Icon</th>
+                                    <th>Tên dịch vụ</th>
+                                    <th>Giá bán lẻ (VNĐ)</th>
+                                    <th>Kích hoạt</th>
+                                </tr>
+                            </thead>
+                            <tbody id="services-table-body">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: var(--text-subtle);">Đang tải bảng giá dịch vụ...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. TAB: MODEMS -->
+            <section class="page-tab" id="tab-modems">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">📱 Quản lý Cổng SIM & Thiết bị GSM</div>
+                            <div class="card-desc">Kiểm tra trực tiếp các cổng SIM đang online trên GSMOnline</div>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <span class="badge badge-success" id="modem-total-count">0 Cổng Online</span>
+                            <button class="btn btn-secondary" onclick="loadModems()">🔄 Làm mới SIM</button>
+                            <button class="btn btn-danger" onclick="resetSimHistory()">♻️ Reset lịch sử SIM</button>
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+                        🔗 Trạng thái Link GSM: <b id="modem-gsm-status" style="color: var(--primary);">Đang kiểm tra...</b>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Cổng (Port)</th>
+                                    <th>Số điện thoại SIM</th>
+                                    <th>Nhà mạng</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modems-table-body">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--text-subtle);">Đang kết nối modem GSM...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. TAB: SESSIONS -->
+            <section class="page-tab" id="tab-sessions">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">📜 Lịch sử Thuê số & Mã OTP</div>
+                            <div class="card-desc">Toàn bộ phiên nhận OTP, số điện thoại và trạng thái hoàn tiền</div>
+                        </div>
+                        <div class="search-box">
+                            <span>🔍</span>
+                            <input type="text" id="session-search-input" placeholder="Tìm theo SĐT, User ID, Dịch vụ..." onkeyup="filterSessions()">
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mã đơn</th>
+                                    <th>User ID</th>
+                                    <th>Dịch vụ</th>
+                                    <th>Số điện thoại</th>
+                                    <th>Mã OTP</th>
+                                    <th>Cước phí</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thời gian</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sessions-table-body">
+                                <tr>
+                                    <td colspan="8" style="text-align: center; color: var(--text-subtle);">Đang tải lịch sử...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. TAB: SETTINGS -->
+            <section class="page-tab" id="tab-settings">
+                <div class="card" style="max-width: 650px;">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">⚙️ Cấu hình Hệ thống</div>
+                            <div class="card-desc">Thiết lập kết nối GSMOnline và thông tin hỗ trợ</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Link GSMOnline Public Token:</label>
+                        <input type="text" class="form-control" id="cfg-gsm-url" placeholder="https://gsmonline.net/public/TOKEN...">
+                        <div style="font-size: 11px; color: var(--text-subtle); margin-top: 4px;">
+                            Link token công khai từ modem GSMOnline của bạn.
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Telegram Admin Contact:</label>
+                        <input type="text" class="form-control" id="cfg-admin-contact" placeholder="@username_hoac_link">
+                        <div style="font-size: 11px; color: var(--text-subtle); margin-top: 4px;">
+                            Hiển thị khi người dùng bấm "Liên hệ hỗ trợ" trên bot Telegram.
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="saveGeneralSettings()">💾 Lưu cấu hình</button>
+                </div>
+            </section>
+
+        </main>
     </div>
 
-    <div id="dashboard" class="hidden max-w-6xl mx-auto p-6">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">⚡ OTP Hub Admin Panel</h1>
-            <button onclick="logout()" class="text-sm bg-red-600 hover:bg-red-500 px-3 py-1.5 rounded">Đăng
-                xuất</button>
-        </div>
+    <!-- Modal Nạp/Trừ tiền -->
+    <div class="modal-overlay" id="balance-modal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div class="modal-title">💳 Cập nhật Ví Khách Hàng</div>
+                <button class="modal-close" onclick="closeBalanceModal()">✕</button>
+            </div>
+            <div>
+                <div id="modal-balance-name" style="font-weight: 600; color: #a5b4fc; margin-bottom: 8px;">Tài khoản: ---</div>
+                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+                    Số dư hiện tại: <b id="modal-balance-current" style="color: #6ee7b7;">0 đ</b>
+                </div>
 
-        <!-- Thống kê nhanh -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="p-4 bg-slate-800 rounded border border-slate-700">
-                <p class="text-gray-400 text-sm">Tổng khách hàng</p>
-                <p id="stat-users" class="text-2xl font-bold mt-1">0</p>
-            </div>
-            <div class="p-4 bg-slate-800 rounded border border-slate-700">
-                <p class="text-gray-400 text-sm">Tổng số dư tất cả ví</p>
-                <p id="stat-balance" class="text-2xl font-bold mt-1 text-green-400">0 đ</p>
-            </div>
-            <div class="p-4 bg-slate-800 rounded border border-slate-700">
-                <p class="text-gray-400 text-sm">Doanh thu OTP</p>
-                <p id="stat-revenue" class="text-2xl font-bold mt-1 text-yellow-400">0 đ</p>
-            </div>
-            <div class="p-4 bg-slate-800 rounded border border-slate-700">
-                <p class="text-gray-400 text-sm">OTP thành công</p>
-                <p id="stat-success" class="text-2xl font-bold mt-1 text-blue-400">0</p>
-            </div>
-        </div>
+                <div class="form-group">
+                    <label class="form-label">Telegram User ID:</label>
+                    <input type="text" class="form-control" id="modal-balance-uid" placeholder="Nhập Telegram User ID (VD: 5049796333)">
+                </div>
 
-        <!-- Cài đặt & Giá -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div class="bg-slate-800 p-5 rounded border border-slate-700">
-                <h3 class="text-lg font-bold mb-3">⚙️ Cấu hình GSM & Admin</h3>
-                <div class="space-y-3">
-                    <div>
-                        <label class="text-xs text-gray-400">Link GSMOnline:</label>
-                        <input type="text" id="cfg-gsm-url"
-                            class="w-full mt-1 p-2 bg-slate-700 rounded border border-slate-600 text-sm">
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-400">Telegram Admin Contact:</label>
-                        <input type="text" id="cfg-contact"
-                            class="w-full mt-1 p-2 bg-slate-700 rounded border border-slate-600 text-sm">
-                    </div>
-                    <div class="flex gap-2 pt-2">
-                        <button onclick="saveGeneralConfig()"
-                            class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded text-sm font-bold">Lưu cấu
-                            hình</button>
-                        <button onclick="resetAllSims()"
-                            class="bg-amber-600 hover:bg-amber-500 px-3 py-2 rounded text-sm">Reset lịch sử SIM</button>
+                <div class="form-group">
+                    <label class="form-label">Số tiền điều chỉnh (VNĐ):</label>
+                    <input type="number" class="form-control" id="modal-balance-amount" placeholder="VD: 50000 (Cộng) hoặc -20000 (Trừ)">
+                    <div style="font-size: 11px; color: var(--text-subtle); margin-top: 4px;">
+                        👉 Nhập số <b>dương</b> (VD: 50000) để <b>cộng tiền</b>.<br>
+                        👉 Nhập số <b>âm</b> (VD: -20000) để <b>trừ tiền</b>.
                     </div>
                 </div>
             </div>
-
-            <div class="bg-slate-800 p-5 rounded border border-slate-700">
-                <h3 class="text-lg font-bold mb-3">💰 Quản lý Bảng giá & Dịch vụ</h3>
-                <div class="overflow-y-auto max-h-56 space-y-2 pr-1" id="service-settings-list"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeBalanceModal()">Hủy</button>
+                <button class="btn btn-primary" onclick="submitBalanceUpdate()">Xác nhận cập nhật</button>
             </div>
-        </div>
-
-        <!-- Đơn thuê gần đây -->
-        <h3 class="text-lg font-bold mb-3">📱 Lịch sử thuê gần đây (Bao gồm thuê lại số cũ)</h3>
-        <div class="overflow-x-auto bg-slate-800 rounded border border-slate-700 mb-8">
-            <table class="w-full text-left text-sm">
-                <thead class="bg-slate-700/50 text-gray-300">
-                    <tr>
-                        <th class="p-3">ID Đơn</th>
-                        <th class="p-3">User ID</th>
-                        <th class="p-3">Dịch vụ</th>
-                        <th class="p-3">Số điện thoại</th>
-                        <th class="p-3">Mã OTP</th>
-                        <th class="p-3">Trạng thái</th>
-                    </tr>
-                </thead>
-                <tbody id="session-table" class="divide-y divide-slate-700"></tbody>
-            </table>
-        </div>
-
-        <!-- Nạp / Trừ tiền khách hàng -->
-        <h3 class="text-lg font-bold mb-3">💳 Cộng / Trừ tiền ví thành viên</h3>
-        <div class="flex gap-3 bg-slate-800 p-4 rounded border border-slate-700">
-            <input type="text" id="add-uid" placeholder="Telegram ID"
-                class="p-2 bg-slate-700 rounded border border-slate-600">
-            <input type="number" id="add-amt" placeholder="Số tiền (VD: 50000 hoặc -20000)"
-                class="p-2 bg-slate-700 rounded border border-slate-600 w-64">
-            <button onclick="updateBalance()"
-                class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded font-bold">Cập nhật ví</button>
         </div>
     </div>
 
-    <script>
-        let token = localStorage.getItem('token');
-        if (token) loadDashboard();
-
-        async function login() {
-            const pass = document.getElementById('admin-pass').value;
-            const res = await fetch('/api/admin/auth', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password: pass })
-            });
-            if (res.ok) {
-                const data = await res.json();
-                localStorage.setItem('token', data.token);
-                token = data.token;
-                loadDashboard();
-            } else alert('Mật khẩu sai');
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            location.reload();
-        }
-
-        async function loadDashboard() {
-            document.getElementById('login-box').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-
-            const res = await fetch('/api/admin/stats', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (res.status === 401) return logout();
-            const data = await res.json();
-
-            document.getElementById('stat-users').innerText = data.totalUsers;
-            document.getElementById('stat-balance').innerText = data.totalBalance.toLocaleString() + ' đ';
-            document.getElementById('stat-revenue').innerText = data.revenue.toLocaleString() + ' đ';
-            document.getElementById('stat-success').innerText = data.successSessions;
-
-            const tbody = document.getElementById('session-table');
-            tbody.innerHTML = data.recentSessions.map(s => `
-        <tr class="hover:bg-slate-700/30">
-          <td class="p-3 font-mono">${s.id.slice(0, 10)}...</td>
-          <td class="p-3 font-mono">${s.user_id}</td>
-          <td class="p-3">${s.service_name} ${s.is_re_rent ? '<span class="text-xs bg-blue-900 text-blue-300 px-1 rounded">Thuê lại</span>' : ''}</td>
-          <td class="p-3 font-mono">${s.phone_number}</td>
-          <td class="p-3 text-emerald-400 font-bold font-mono">${s.otp || '-'}</td>
-          <td class="p-3"><span class="px-2 py-0.5 rounded text-xs ${s.status === 'success' ? 'bg-green-800' : s.status === 'waiting' ? 'bg-yellow-800' : 'bg-gray-700'}">${s.status}</span></td>
-        </tr>
-      `).join('');
-
-            loadSettings();
-        }
-
-        async function loadSettings() {
-            const res = await fetch('/api/admin/settings', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (!res.ok) return;
-            const { config, services } = await res.json();
-
-            document.getElementById('cfg-gsm-url').value = config.gsm_url || '';
-            document.getElementById('cfg-contact').value = config.admin_contact || '';
-
-            const list = document.getElementById('service-settings-list');
-            list.innerHTML = services.map(s => `
-        <div class="flex items-center justify-between p-2 bg-slate-700/50 rounded border border-slate-600 text-sm">
-          <span>${s.icon} ${s.name}</span>
-          <div class="flex items-center gap-2">
-            <input type="number" id="price-${s.id}" value="${s.price}" class="w-20 p-1 bg-slate-800 rounded border border-slate-600 text-right text-xs">
-            <button onclick="setPrice('${s.id}')" class="bg-blue-600 px-2 py-1 rounded text-xs hover:bg-blue-500">Lưu</button>
-            <button onclick="toggleService('${s.id}')" class="px-2 py-1 rounded text-xs ${s.enabled ? 'bg-emerald-600' : 'bg-red-600'}">
-              ${s.enabled ? 'Bật' : 'Tắt'}
-            </button>
-          </div>
+    <!-- Modal Đăng nhập Admin -->
+    <div class="modal-overlay" id="login-modal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div class="modal-title">🔒 Đăng nhập Quản Trị Viên</div>
+            </div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px;">
+                Vui lòng nhập mật khẩu quản trị (<code>ADMIN_SECRET_KEY</code>) để truy cập hệ thống.
+            </p>
+            <div class="form-group">
+                <input type="password" class="form-control" id="login-password" placeholder="Nhập mật khẩu quản trị..." onkeyup="if(event.key==='Enter') handleLogin()">
+            </div>
+            <div class="modal-footer" style="margin-top: 16px;">
+                <button class="btn btn-primary" onclick="handleLogin()" style="width: 100%; justify-content: center;">
+                    Đăng nhập Bảng Điều Khiển
+                </button>
+            </div>
         </div>
-      `).join('');
-        }
+    </div>
 
-        async function saveGeneralConfig() {
-            const payload = {
-                gsm_url: document.getElementById('cfg-gsm-url').value,
-                admin_contact: document.getElementById('cfg-contact').value
-            };
-            await fetch('/api/admin/settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ action: 'update_general', payload })
-            });
-            alert('Đã lưu cấu hình!');
-        }
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toast-container"></div>
 
-        async function setPrice(serviceId) {
-            const price = document.getElementById(`price-${serviceId}`).value;
-            await fetch('/api/admin/settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ action: 'set_price', payload: { serviceId, price } })
-            });
-            alert('Đã cập nhật giá!');
-        }
-
-        async function toggleService(serviceId) {
-            await fetch('/api/admin/settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ action: 'toggle_service', payload: { serviceId } })
-            });
-            loadSettings();
-        }
-
-        async function resetAllSims() {
-            if (!confirm('Bạn có chắc muốn reset toàn bộ SIM?')) return;
-            await fetch('/api/admin/settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ action: 'reset_sims' })
-            });
-            alert('Đã reset toàn bộ SIM!');
-        }
-
-        async function updateBalance() {
-            const userId = document.getElementById('add-uid').value;
-            const amount = document.getElementById('add-amt').value;
-            if (!userId || !amount) return alert('Vui lòng điền đủ thông tin');
-            const res = await fetch('/api/admin/users', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ userId, amount })
-            });
-            if (res.ok) {
-                alert('Cập nhật ví thành công');
-                loadDashboard();
-            } else alert('Lỗi khi cập nhật ví');
-        }
-    </script>
+    <script src="/admin/js/app.js"></script>
 </body>
 
 </html>
