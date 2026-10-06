@@ -4,7 +4,8 @@
     "type": "module",
     "scripts": {
         "dev": "vercel dev",
-        "deploy": "vercel --prod"
+        "deploy": "vercel --prod",
+        "worker": "node worker.js"
     },
     "dependencies": {
         "@upstash/redis": "^1.34.3"

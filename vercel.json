@@ -1,8 +1,44 @@
 {
     "rewrites": [
         {
-            "source": "/admin",
-            "destination": "/admin/index.html"
+            "source": "/users/balance",
+            "destination": "/api/partner?action=balance"
+        },
+        {
+            "source": "/service/getv2",
+            "destination": "/api/partner?action=services"
+        },
+        {
+            "source": "/request/getv2",
+            "destination": "/api/partner?action=request"
+        },
+        {
+            "source": "/session/getv2",
+            "destination": "/api/partner?action=session"
+        },
+        {
+            "source": "/session/cancel",
+            "destination": "/api/partner?action=cancel"
+        },
+        {
+            "source": "/api/users/balance",
+            "destination": "/api/partner?action=balance"
+        },
+        {
+            "source": "/api/service/getv2",
+            "destination": "/api/partner?action=services"
+        },
+        {
+            "source": "/api/request/getv2",
+            "destination": "/api/partner?action=request"
+        },
+        {
+            "source": "/api/session/getv2",
+            "destination": "/api/partner?action=session"
+        },
+        {
+            "source": "/api/session/cancel",
+            "destination": "/api/partner?action=cancel"
         },
         {
             "source": "/",

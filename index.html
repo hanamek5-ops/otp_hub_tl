@@ -4,390 +4,1433 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OTPHub GSM — Quản Trị Hệ Thống Chuyên Nghiệp</title>
+    <title>OTPHub Cloud API — Nền Tảng Cho Thuê Số Nhận OTP & Tích Hợp API GSM Tự Động</title>
+    <meta name="description" content="Hạ tầng cho thuê số điện thoại nhận mã OTP tự động qua API. Cổng SIM thực đa nhà mạng, nhận SMS chỉ sau 2-5 giây, tự động hoàn tiền nếu không có OTP.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/admin/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #07090e;
+            --bg-card: #0f1422;
+            --bg-card-hover: #151c2e;
+            --bg-glass: rgba(15, 20, 34, 0.75);
+            --border-subtle: #1c263c;
+            --border-accent: rgba(0, 242, 254, 0.25);
+            --text-main: #f1f5f9;
+            --text-muted: #8b9bb4;
+            --text-dim: #55657e;
+            --primary: #00f2fe;
+            --primary-glow: rgba(0, 242, 254, 0.35);
+            --secondary: #4facfe;
+            --accent-purple: #8b5cf6;
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --code-bg: #090d16;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --radius-full: 9999px;
+            --shadow-glow: 0 0 35px -5px rgba(0, 242, 254, 0.25);
+            --transition: all 0.22s ease-in-out;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 10%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 50% 85%, rgba(79, 172, 254, 0.05) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, .brand-font {
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: -0.02em;
+        }
+
+        code, pre, .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(7, 9, 14, 0.82);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 16px 0;
+            transition: var(--transition);
+        }
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent-purple) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 16px rgba(0, 242, 254, 0.35);
+        }
+
+        .brand-name {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .brand-name span {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: var(--transition);
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: #03101b;
+            box-shadow: 0 4px 18px var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(0, 242, 254, 0.5);
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-main);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 160px 0 90px;
+            text-align: center;
+            position: relative;
+        }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: var(--radius-full);
+            background: rgba(0, 242, 254, 0.08);
+            border: 1px solid rgba(0, 242, 254, 0.25);
+            color: var(--primary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.15;
+            margin-bottom: 24px;
+            max-width: 950px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-title .gradient-text {
+            background: linear-gradient(135deg, var(--primary) 0%, #a855f7 50%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-desc {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            max-width: 720px;
+            margin: 0 auto 36px;
+        }
+
+        .hero-btns {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 60px;
+            flex-wrap: wrap;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            max-width: 1040px;
+            margin: 0 auto;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 24px 20px;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .stat-val {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: 'Outfit', sans-serif;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        /* Section Commons */
+        .section {
+            padding: 90px 0;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 54px;
+        }
+
+        .section-tag {
+            color: var(--primary);
+            text-transform: uppercase;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+
+        .section-title {
+            font-size: 2.4rem;
+            font-weight: 800;
+            margin-bottom: 14px;
+        }
+
+        .section-desc {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Features */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 32px 28px;
+            transition: var(--transition);
+        }
+
+        .feature-card:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(0, 242, 254, 0.4);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon-box {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            background: rgba(0, 242, 254, 0.08);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.94rem;
+        }
+
+        /* API Explorer / Docs Section */
+        .docs-wrapper {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .docs-sidebar {
+            background: rgba(11, 15, 26, 0.9);
+            border-right: 1px solid var(--border-subtle);
+            padding: 24px 16px;
+        }
+
+        .docs-sidebar-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-dim);
+            padding: 0 12px 12px;
+            font-weight: 700;
+        }
+
+        .endpoint-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 8px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            text-align: left;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 4px;
+        }
+
+        .endpoint-btn:hover {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-main);
+        }
+
+        .endpoint-btn.active {
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--primary);
+            border-left: 3px solid var(--primary);
+        }
+
+        .method-tag {
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            font-family: monospace;
+        }
+
+        .method-get {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+
+        .method-post {
+            background: rgba(0, 242, 254, 0.15);
+            color: var(--primary);
+        }
+
+        .docs-main {
+            padding: 32px;
+            background: var(--bg-card);
+        }
+
+        .doc-header {
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .doc-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .doc-url-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--code-bg);
+            border: 1px solid var(--border-subtle);
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            margin-top: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.92rem;
+        }
+
+        .doc-url-box span {
+            color: var(--primary);
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+        }
+
+        .copy-btn:hover {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+        }
+
+        /* Params Table */
+        .params-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 24px 0 12px;
+            color: var(--text-main);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 24px;
+        }
+
+        .api-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        .api-table th {
+            text-align: left;
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text-dim);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .api-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+        }
+
+        .api-table td strong {
+            color: var(--text-main);
+            font-family: monospace;
+        }
+
+        .badge-req {
+            color: var(--accent-red);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-opt {
+            color: var(--text-dim);
+            font-size: 0.75rem;
+        }
+
+        /* Code tabs */
+        .code-tabs-wrapper {
+            background: var(--code-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .code-tabs-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.35);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0 12px;
+        }
+
+        .code-lang-tabs {
+            display: flex;
+        }
+
+        .lang-tab {
+            padding: 10px 16px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .lang-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .code-body {
+            padding: 18px;
+            overflow-x: auto;
+            color: #d1d5db;
+            font-size: 0.86rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* Balance & Key Checker */
+        .checker-box {
+            background: linear-gradient(145deg, #101626 0%, #0c101c 100%);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        .checker-form {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .checker-input {
+            flex: 1;
+            background: var(--code-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            font-family: 'JetBrains Mono', monospace;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .checker-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .checker-result {
+            display: none;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 20px 24px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .res-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .res-item {
+            text-align: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+        }
+
+        .res-title {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .res-val {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        /* Services Pricing Table */
+        .pricing-section {
+            background: rgba(15, 20, 34, 0.5);
+            border-top: 1px solid var(--border-subtle);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .service-search-box {
+            max-width: 420px;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--code-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 12px 18px 12px 42px;
+            color: var(--text-main);
+            font-size: 0.92rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+        }
+
+        .service-table-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .table-custom {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .table-custom th {
+            background: rgba(11, 15, 26, 0.85);
+            padding: 16px 20px;
+            color: var(--text-dim);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .table-custom td {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            font-size: 0.94rem;
+        }
+
+        .table-custom tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .price-badge {
+            font-weight: 700;
+            color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.92rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--accent-green);
+        }
+
+        /* Telegram CTA */
+        .cta-banner {
+            background: radial-gradient(circle at center, rgba(0, 242, 254, 0.12) 0%, rgba(15, 20, 34, 0.95) 70%);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            border-radius: var(--radius-lg);
+            padding: 60px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-glow);
+        }
+
+        /* Footer */
+        .footer {
+            border-top: 1px solid var(--border-subtle);
+            padding: 50px 0 30px;
+            background: #05070b;
+            color: var(--text-dim);
+            font-size: 0.88rem;
+        }
+
+        .footer-grid {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        /* Toast notification */
+        .toast-notify {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #111827;
+            border: 1px solid var(--primary);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            font-size: 0.9rem;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .toast-notify.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .hero-title { font-size: 2.6rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .features-grid { grid-template-columns: 1fr; }
+            .docs-wrapper { grid-template-columns: 1fr; }
+            .docs-sidebar { border-right: none; border-bottom: 1px solid var(--border-subtle); }
+            .nav-menu { display: none; }
+        }
+
+        @media (max-width: 640px) {
+            .hero-title { font-size: 2.1rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .checker-form { flex-direction: column; }
+            .res-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 
 <body>
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-badge">⚡</div>
-            <div class="logo-text">
-                <h2>OTPHub GSM</h2>
-                <span>Bảng Quản Trị</span>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="container nav-inner">
+            <a href="#" class="brand-logo">
+                <div class="logo-icon">⚡</div>
+                <div class="brand-name">OTPHub <span>Cloud API</span></div>
+            </a>
+
+            <ul class="nav-menu">
+                <li><a href="#features" class="nav-link">Tính Năng</a></li>
+                <li><a href="#services" class="nav-link">Bảng Giá Dịch Vụ</a></li>
+                <li><a href="#documentation" class="nav-link">Tài Liệu API</a></li>
+                <li><a href="#balance-checker" class="nav-link">Tra Cứu Key</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <a href="#documentation" class="btn btn-outline">Tài Liệu API</a>
+                <a href="https://t.me/tralaicuocsongchochinhminh" target="_blank" class="btn btn-primary">
+                    <span>🤖 Mở Bot Telegram</span>
+                </a>
             </div>
         </div>
+    </header>
 
-        <nav class="nav-links">
-            <a class="nav-item active" href="#overview" data-tab="overview">
-                <span class="nav-icon">📊</span>
-                <span>Tổng quan</span>
-            </a>
-            <a class="nav-item" href="#users" data-tab="users">
-                <span class="nav-icon">👥</span>
-                <span>Quản lý Khách hàng</span>
-            </a>
-            <a class="nav-item" href="#services" data-tab="services">
-                <span class="nav-icon">⚡</span>
-                <span>Bảng giá & Dịch vụ</span>
-            </a>
-            <a class="nav-item" href="#modems" data-tab="modems">
-                <span class="nav-icon">📱</span>
-                <span>Cổng SIM & Modem</span>
-            </a>
-            <a class="nav-item" href="#sessions" data-tab="sessions">
-                <span class="nav-icon">📜</span>
-                <span>Lịch sử Thuê & OTP</span>
-            </a>
-            <a class="nav-item" href="#settings" data-tab="settings">
-                <span class="nav-icon">⚙️</span>
-                <span>Cài đặt Hệ thống</span>
-            </a>
-        </nav>
-
-        <div class="sidebar-footer">
-            <div class="user-profile">
-                <div class="avatar">AD</div>
-                <div class="user-info">
-                    <div class="name">Quản Trị Viên</div>
-                    <div class="role">Master Admin</div>
-                </div>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="badge-pill">
+                <span class="pulse-dot"></span>
+                <span>Hạ Tầng SIM Thực 100% — Tốc Độ Nhận Mã 2-5 Giây</span>
             </div>
-            <button class="btn btn-secondary" onclick="handleLogout()" style="padding: 6px; font-size: 14px;" title="Đăng xuất">🚪</button>
-        </div>
-    </aside>
 
-    <!-- Main Content Area -->
-    <div class="main-wrapper">
-        <!-- Topbar -->
-        <header class="topbar">
-            <div class="topbar-left">
-                <h1 id="topbar-page-title">Tổng quan Hệ thống</h1>
-            </div>
-            <div class="topbar-right">
-                <div class="status-indicator">
-                    <div class="pulse-dot"></div>
-                    <span>Hệ thống Hoạt động</span>
-                </div>
-                <button class="btn btn-primary" onclick="openBalanceModal()">
-                    ➕ Nạp tiền nhanh
-                </button>
-            </div>
-        </header>
+            <h1 class="hero-title">
+                Hệ Thống Thuê Số OTP Tự Động & <br>
+                <span class="gradient-text">Tích Hợp API GSM Chuyên Nghiệp</span>
+            </h1>
 
-        <!-- Pages View Area -->
-        <main class="content-area">
-
-            <!-- 1. TAB: OVERVIEW -->
-            <section class="page-tab active" id="tab-overview">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-info">
-                            <div class="title">TỔNG KHÁCH HÀNG</div>
-                            <div class="value" id="stat-total-users">0</div>
-                            <div class="sub">Tài khoản Telegram</div>
-                        </div>
-                        <div class="stat-icon icon-blue">👥</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-info">
-                            <div class="title">TỔNG SỐ DƯ CÁC VÍ</div>
-                            <div class="value" id="stat-total-balance">0 đ</div>
-                            <div class="sub">Số dư khả dụng</div>
-                        </div>
-                        <div class="stat-icon icon-green">💰</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-info">
-                            <div class="title">DOANH THU OTP</div>
-                            <div class="value" id="stat-revenue">0 đ</div>
-                            <div class="sub">Phiên nhận thành công</div>
-                        </div>
-                        <div class="stat-icon icon-purple">📈</div>
-                    </div>
-
-                    <div class="stat-card">
-                        <div class="stat-info">
-                            <div class="title">TỶ LỆ THÀNH CÔNG</div>
-                            <div class="value" id="stat-success-rate">0 / 0</div>
-                            <div class="sub">Tự động hoàn tiền 100%</div>
-                        </div>
-                        <div class="stat-icon icon-amber">🎯</div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <div>
-                            <div class="card-title">⚡ Các phiên thuê số mới nhất</div>
-                            <div class="card-desc">Cập nhật trực tiếp các đơn thuê số và mã OTP gần đây</div>
-                        </div>
-                        <a href="#sessions" class="btn btn-secondary" style="font-size: 12px;">Xem tất cả</a>
-                    </div>
-                    <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Mã đơn</th>
-                                    <th>Khách hàng (ID)</th>
-                                    <th>Dịch vụ</th>
-                                    <th>Số điện thoại</th>
-                                    <th>Mã OTP</th>
-                                    <th>Trạng thái</th>
-                                    <th>Thời gian</th>
-                                </tr>
-                            </thead>
-                            <tbody id="overview-recent-sessions">
-                                <tr>
-                                    <td colspan="7" style="text-align: center; color: var(--text-subtle);">Đang tải dữ liệu...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 2. TAB: USERS -->
-            <section class="page-tab" id="tab-users">
-                <div class="card">
-                    <div class="card-header">
-                        <div>
-                            <div class="card-title">👥 Quản lý Khách hàng & Số dư</div>
-                            <div class="card-desc">Tìm kiếm, kiểm tra số dư và nạp/trừ tiền ví người dùng</div>
-                        </div>
-                        <div style="display: flex; gap: 12px; align-items: center;">
-                            <span class="badge badge-secondary" id="user-count-badge">0 tài khoản</span>
-                            <div class="search-box">
-                                <span>🔍</span>
-                                <input type="text" id="user-search-input" placeholder="Tìm ID, Tên, @username..." onkeyup="filterUsers()">
-                            </div>
-                            <button class="btn btn-primary" onclick="openBalanceModal()">+ Nạp tiền</button>
-                        </div>
-                    </div>
-                    <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID Telegram</th>
-                                    <th>Họ và tên</th>
-                                    <th>Username</th>
-                                    <th>Số dư ví</th>
-                                    <th>Ngày tham gia</th>
-                                    <th>Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody id="users-table-body">
-                                <tr>
-                                    <td colspan="6" style="text-align: center; color: var(--text-subtle);">Đang tải danh sách người dùng...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 3. TAB: SERVICES -->
-            <section class="page-tab" id="tab-services">
-                <div class="card">
-                    <div class="card-header">
-                        <div>
-                            <div class="card-title">⚡ Bảng giá & Trạng thái Dịch vụ</div>
-                            <div class="card-desc">Bật/tắt dịch vụ và điều chỉnh giá thuê OTP theo ý muốn</div>
-                        </div>
-                        <button class="btn btn-secondary" onclick="loadServices()">🔄 Làm mới</button>
-                    </div>
-                    <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Icon</th>
-                                    <th>Tên dịch vụ</th>
-                                    <th>Giá bán lẻ (VNĐ)</th>
-                                    <th>Kích hoạt</th>
-                                </tr>
-                            </thead>
-                            <tbody id="services-table-body">
-                                <tr>
-                                    <td colspan="4" style="text-align: center; color: var(--text-subtle);">Đang tải bảng giá dịch vụ...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 4. TAB: MODEMS -->
-            <section class="page-tab" id="tab-modems">
-                <div class="card">
-                    <div class="card-header">
-                        <div>
-                            <div class="card-title">📱 Quản lý Cổng SIM & Thiết bị GSM</div>
-                            <div class="card-desc">Kiểm tra trực tiếp các cổng SIM đang online trên GSMOnline</div>
-                        </div>
-                        <div style="display: flex; gap: 12px;">
-                            <span class="badge badge-success" id="modem-total-count">0 Cổng Online</span>
-                            <button class="btn btn-secondary" onclick="loadModems()">🔄 Làm mới SIM</button>
-                            <button class="btn btn-danger" onclick="resetSimHistory()">♻️ Reset lịch sử SIM</button>
-                        </div>
-                    </div>
-                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
-                        🔗 Trạng thái Link GSM: <b id="modem-gsm-status" style="color: var(--primary);">Đang kiểm tra...</b>
-                    </div>
-                    <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>STT</th>
-                                    <th>Cổng (Port)</th>
-                                    <th>Số điện thoại SIM</th>
-                                    <th>Nhà mạng</th>
-                                    <th>Trạng thái</th>
-                                </tr>
-                            </thead>
-                            <tbody id="modems-table-body">
-                                <tr>
-                                    <td colspan="5" style="text-align: center; color: var(--text-subtle);">Đang kết nối modem GSM...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 5. TAB: SESSIONS -->
-            <section class="page-tab" id="tab-sessions">
-                <div class="card">
-                    <div class="card-header">
-                        <div>
-                            <div class="card-title">📜 Lịch sử Thuê số & Mã OTP</div>
-                            <div class="card-desc">Toàn bộ phiên nhận OTP, số điện thoại và trạng thái hoàn tiền</div>
-                        </div>
-                        <div class="search-box">
-                            <span>🔍</span>
-                            <input type="text" id="session-search-input" placeholder="Tìm theo SĐT, User ID, Dịch vụ..." onkeyup="filterSessions()">
-                        </div>
-                    </div>
-                    <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Mã đơn</th>
-                                    <th>User ID</th>
-                                    <th>Dịch vụ</th>
-                                    <th>Số điện thoại</th>
-                                    <th>Mã OTP</th>
-                                    <th>Cước phí</th>
-                                    <th>Trạng thái</th>
-                                    <th>Thời gian</th>
-                                </tr>
-                            </thead>
-                            <tbody id="sessions-table-body">
-                                <tr>
-                                    <td colspan="8" style="text-align: center; color: var(--text-subtle);">Đang tải lịch sử...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 6. TAB: SETTINGS -->
-            <section class="page-tab" id="tab-settings">
-                <div class="card" style="max-width: 650px;">
-                    <div class="card-header">
-                        <div>
-                            <div class="card-title">⚙️ Cấu hình Hệ thống</div>
-                            <div class="card-desc">Thiết lập kết nối GSMOnline và thông tin hỗ trợ</div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Link GSMOnline Public Token:</label>
-                        <input type="text" class="form-control" id="cfg-gsm-url" placeholder="https://gsmonline.net/public/TOKEN...">
-                        <div style="font-size: 11px; color: var(--text-subtle); margin-top: 4px;">
-                            Link token công khai từ modem GSMOnline của bạn.
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Telegram Admin Contact:</label>
-                        <input type="text" class="form-control" id="cfg-admin-contact" placeholder="@username_hoac_link">
-                        <div style="font-size: 11px; color: var(--text-subtle); margin-top: 4px;">
-                            Hiển thị khi người dùng bấm "Liên hệ hỗ trợ" trên bot Telegram.
-                        </div>
-                    </div>
-
-                    <button class="btn btn-primary" onclick="saveGeneralSettings()">💾 Lưu cấu hình</button>
-                </div>
-            </section>
-
-        </main>
-    </div>
-
-    <!-- Modal Nạp/Trừ tiền -->
-    <div class="modal-overlay" id="balance-modal">
-        <div class="modal-dialog">
-            <div class="modal-header">
-                <div class="modal-title">💳 Cập nhật Ví Khách Hàng</div>
-                <button class="modal-close" onclick="closeBalanceModal()">✕</button>
-            </div>
-            <div>
-                <div id="modal-balance-name" style="font-weight: 600; color: #a5b4fc; margin-bottom: 8px;">Tài khoản: ---</div>
-                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
-                    Số dư hiện tại: <b id="modal-balance-current" style="color: #6ee7b7;">0 đ</b>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Telegram User ID:</label>
-                    <input type="text" class="form-control" id="modal-balance-uid" placeholder="Nhập Telegram User ID (VD: 5049796333)">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Số tiền điều chỉnh (VNĐ):</label>
-                    <input type="number" class="form-control" id="modal-balance-amount" placeholder="VD: 50000 (Cộng) hoặc -20000 (Trừ)">
-                    <div style="font-size: 11px; color: var(--text-subtle); margin-top: 4px;">
-                        👉 Nhập số <b>dương</b> (VD: 50000) để <b>cộng tiền</b>.<br>
-                        👉 Nhập số <b>âm</b> (VD: -20000) để <b>trừ tiền</b>.
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeBalanceModal()">Hủy</button>
-                <button class="btn btn-primary" onclick="submitBalanceUpdate()">Xác nhận cập nhật</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Đăng nhập Admin -->
-    <div class="modal-overlay" id="login-modal">
-        <div class="modal-dialog">
-            <div class="modal-header">
-                <div class="modal-title">🔒 Đăng nhập Quản Trị Viên</div>
-            </div>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px;">
-                Vui lòng nhập mật khẩu quản trị (<code>ADMIN_SECRET_KEY</code>) để truy cập hệ thống.
+            <p class="hero-desc">
+                Cung cấp giải pháp nhận mã xác minh OTP qua cổng modem GSM vật lý đa nhà mạng (Viettel, VinaPhone, MobiFone). Tích hợp cực nhanh với chuẩn REST API, tự động hoàn 100% tiền nếu không có mã.
             </p>
-            <div class="form-group">
-                <input type="password" class="form-control" id="login-password" placeholder="Nhập mật khẩu quản trị..." onkeyup="if(event.key==='Enter') handleLogin()">
+
+            <div class="hero-btns">
+                <a href="#documentation" class="btn btn-primary" style="padding: 14px 28px; font-size: 1rem;">
+                    🔌 Bắt Đầu Tích Hợp API
+                </a>
+                <a href="#balance-checker" class="btn btn-outline" style="padding: 14px 28px; font-size: 1rem;">
+                    🔍 Kiểm Tra Số Dư API Key
+                </a>
             </div>
-            <div class="modal-footer" style="margin-top: 16px;">
-                <button class="btn btn-primary" onclick="handleLogin()" style="width: 100%; justify-content: center;">
-                    Đăng nhập Bảng Điều Khiển
-                </button>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-val">2 - 5s</div>
+                    <div class="stat-label">Thời gian nhận OTP trung bình</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val">99.98%</div>
+                    <div class="stat-label">Uptime hệ thống máy chủ</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val">100%</div>
+                    <div class="stat-label">Cổng SIM thực vật lý</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val">0 VNĐ</div>
+                    <div class="stat-label">Tự động hoàn tiền nếu lỗi</div>
+                </div>
             </div>
         </div>
+    </section>
+
+    <!-- Features -->
+    <section class="section" id="features">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-tag">ƯU ĐIỂM HỆ THỐNG</div>
+                <h2 class="section-title">Tại Sao Nên Chọn OTPHub Cloud API?</h2>
+                <p class="section-desc">Được tối ưu hoá cho các lập trình viên, hệ thống tự động hoá và công cụ MMO quy mô lớn.</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon-box">⚡</div>
+                    <h3>Tốc Độ Tức Thì</h3>
+                    <p>Sử dụng hạ tầng modem GSM trực tiếp, mã xác minh SMS được bóc tách và phản hồi qua API ngay khi nhà mạng gửi tới.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-box">🔄</div>
+                    <h3>Tự Động Hoàn Tiền</h3>
+                    <p>Nếu hết thời gian chờ (120 giây) hoặc bạn chủ động gọi lệnh Hủy phiên, hệ thống sẽ tự động hoàn 100% tiền về số dư tài khoản.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-box">🔌</div>
+                    <h3>Chuẩn RESTful API</h3>
+                    <p>Tương thích tuyệt đối với mọi ngôn ngữ lập trình như Python, Node.js, C#, PHP, Go. Phản hồi định dạng JSON chuẩn quốc tế.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-box">📱</div>
+                    <h3>Đa Dạng Dịch Vụ</h3>
+                    <p>Hỗ trợ đầy đủ các dịch vụ hàng đầu: Telegram, Facebook, Google, TikTok, Shopee, Zalo, Twitter/X, Microsoft, WhatsApp và hơn thế nữa.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-box">🛡️</div>
+                    <h3>An Toàn & Bảo Mật</h3>
+                    <p>Mỗi khách hàng được cấp một mã API Key riêng biệt, dữ liệu phiên làm việc được mã hóa và xóa định kỳ sau khi hoàn tất.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-box">🤖</div>
+                    <h3>Nạp Tiền Qua Telegram</h3>
+                    <p>Nạp tiền tự động qua QR Code ngân hàng 24/7 và nhận API Key ngay trên Telegram bot chỉ trong vài giây.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services & Pricing Table -->
+    <section class="section pricing-section" id="services">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-tag">BẢNG GIÁ DỊCH VỤ</div>
+                <h2 class="section-title">Bảng Dịch Vụ & Đơn Giá Thuê Số</h2>
+                <p class="section-desc">Đơn giá cạnh tranh, chỉ trừ tiền khi nhận mã thành công. Sử dụng `service_id` bên dưới khi gọi API.</p>
+            </div>
+
+            <div class="service-search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="serviceSearchInput" class="search-input" placeholder="Tìm dịch vụ (VD: Telegram, Facebook, Google...)" onkeyup="filterServices()">
+            </div>
+
+            <div class="service-table-card">
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead>
+                            <tr>
+                                <th>Service ID</th>
+                                <th>Tên Dịch Vụ</th>
+                                <th>Đơn Giá / OTP</th>
+                                <th>Trạng Thái</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="servicesTableBody">
+                            <!-- Populated by JavaScript -->
+                            <tr>
+                                <td><code>telegram</code></td>
+                                <td><strong>Telegram Messenger</strong></td>
+                                <td><span class="price-badge">1,500 đ</span></td>
+                                <td><span class="status-badge">● Sẵn sàng</span></td>
+                                <td><button class="copy-btn" onclick="copyText('telegram')">Sao chép ID</button></td>
+                            </tr>
+                            <tr>
+                                <td><code>facebook</code></td>
+                                <td><strong>Facebook / Meta</strong></td>
+                                <td><span class="price-badge">1,200 đ</span></td>
+                                <td><span class="status-badge">● Sẵn sàng</span></td>
+                                <td><button class="copy-btn" onclick="copyText('facebook')">Sao chép ID</button></td>
+                            </tr>
+                            <tr>
+                                <td><code>google</code></td>
+                                <td><strong>Google / Gmail / YouTube</strong></td>
+                                <td><span class="price-badge">1,500 đ</span></td>
+                                <td><span class="status-badge">● Sẵn sàng</span></td>
+                                <td><button class="copy-btn" onclick="copyText('google')">Sao chép ID</button></td>
+                            </tr>
+                            <tr>
+                                <td><code>tiktok</code></td>
+                                <td><strong>TikTok Global</strong></td>
+                                <td><span class="price-badge">1,000 đ</span></td>
+                                <td><span class="status-badge">● Sẵn sàng</span></td>
+                                <td><button class="copy-btn" onclick="copyText('tiktok')">Sao chép ID</button></td>
+                            </tr>
+                            <tr>
+                                <td><code>shopee</code></td>
+                                <td><strong>Shopee Việt Nam</strong></td>
+                                <td><span class="price-badge">1,200 đ</span></td>
+                                <td><span class="status-badge">● Sẵn sàng</span></td>
+                                <td><button class="copy-btn" onclick="copyText('shopee')">Sao chép ID</button></td>
+                            </tr>
+                            <tr>
+                                <td><code>zalo</code></td>
+                                <td><strong>Zalo App</strong></td>
+                                <td><span class="price-badge">2,000 đ</span></td>
+                                <td><span class="status-badge">● Sẵn sàng</span></td>
+                                <td><button class="copy-btn" onclick="copyText('zalo')">Sao chép ID</button></td>
+                            </tr>
+                            <tr>
+                                <td><code>other</code></td>
+                                <td><strong>Dịch vụ Khác (Mặc định)</strong></td>
+                                <td><span class="price-badge">1,000 đ</span></td>
+                                <td><span class="status-badge">● Sẵn sàng</span></td>
+                                <td><button class="copy-btn" onclick="copyText('other')">Sao chép ID</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API Documentation & Playground -->
+    <section class="section" id="documentation">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-tag">API REFERENCE</div>
+                <h2 class="section-title">Tài Liệu Tích Hợp API Đối Tác</h2>
+                <p class="section-desc">Đơn giản, dễ tích hợp. Hỗ trợ đầy đủ cURL, Python, NodeJS, PHP.</p>
+            </div>
+
+            <div class="docs-wrapper">
+                <!-- Sidebar -->
+                <div class="docs-sidebar">
+                    <div class="docs-sidebar-title">DANH SÁCH ENDPOINT</div>
+                    <button class="endpoint-btn active" onclick="switchEndpoint('request')">
+                        <span class="method-tag method-get">GET</span>
+                        <span>Thuê Số Nhận OTP</span>
+                    </button>
+                    <button class="endpoint-btn" onclick="switchEndpoint('session')">
+                        <span class="method-tag method-get">GET</span>
+                        <span>Lấy Mã OTP</span>
+                    </button>
+                    <button class="endpoint-btn" onclick="switchEndpoint('cancel')">
+                        <span class="method-tag method-get">GET</span>
+                        <span>Hủy Phiên & Hoàn Tiền</span>
+                    </button>
+                    <button class="endpoint-btn" onclick="switchEndpoint('balance')">
+                        <span class="method-tag method-get">GET</span>
+                        <span>Kiểm Tra Số Dư</span>
+                    </button>
+                    <button class="endpoint-btn" onclick="switchEndpoint('services')">
+                        <span class="method-tag method-get">GET</span>
+                        <span>Danh Sách Dịch Vụ</span>
+                    </button>
+                </div>
+
+                <!-- Main Content Area -->
+                <div class="docs-main" id="docsMainContent">
+                    <!-- Dynamic Endpoint Details -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- API Key & Balance Checker -->
+    <section class="section" id="balance-checker">
+        <div class="container">
+            <div class="checker-box">
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <h3 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 8px;">🔍 Tra Cứu Số Dư & Kiểm Tra API Key</h3>
+                    <p style="color: var(--text-muted); font-size: 0.95rem;">Dán mã API Key của bạn để kiểm tra trực tiếp số dư tài khoản và trạng thái hoạt động.</p>
+                </div>
+
+                <div class="checker-form">
+                    <input type="text" id="checkerApiKeyInput" class="checker-input" placeholder="Nhập API Key của bạn (VD: 8f9b2c4e1a0d7e...)" onkeyup="if(event.key==='Enter') checkApiKey()">
+                    <button class="btn btn-primary" onclick="checkApiKey()">
+                        <span>Kiểm Tra Số Dư</span>
+                    </button>
+                </div>
+
+                <div id="checkerResult" class="checker-result">
+                    <div class="res-grid">
+                        <div class="res-item">
+                            <div class="res-title">Trạng Thái</div>
+                            <div class="res-val" style="color: var(--accent-green);" id="resStatus">Hoạt Động</div>
+                        </div>
+                        <div class="res-item">
+                            <div class="res-title">Số Dư Khả Dụng</div>
+                            <div class="res-val" id="resBalance">0 đ</div>
+                        </div>
+                        <div class="res-item">
+                            <div class="res-title">Mã Khách Hàng</div>
+                            <div class="res-val" style="font-size: 1.1rem; color: var(--text-main);" id="resUserId">---</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Telegram CTA -->
+    <section class="section">
+        <div class="container">
+            <div class="cta-banner">
+                <h2 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 12px;">Bạn Chưa Có Mã API Key?</h2>
+                <p style="color: var(--text-muted); font-size: 1.05rem; max-width: 600px; margin: 0 auto 28px;">
+                    Khởi động Bot Telegram ngay để tạo tài khoản, nạp tiền tự động qua QR Code ngân hàng 24/7 và nhận API Key chỉ trong 30 giây!
+                </p>
+                <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
+                    <a href="https://t.me/tralaicuocsongchochinhminh" target="_blank" class="btn btn-primary" style="padding: 14px 28px; font-size: 1rem;">
+                        🤖 Nhận API Key Qua Bot Telegram
+                    </a>
+                    <a href="https://t.me/tralaicuocsongchochinhminh" target="_blank" class="btn btn-outline" style="padding: 14px 28px; font-size: 1rem;">
+                        💬 Hỗ Trợ Kỹ Thuật 24/7
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="logo-icon" style="width: 32px; height: 32px; font-size: 16px;">⚡</div>
+                    <span style="font-weight: 700; color: var(--text-main);">OTPHub Cloud API GSM</span>
+                </div>
+                <div>
+                    <span>Hệ thống cho thuê số nhận OTP bảo mật và ổn định</span>
+                </div>
+            </div>
+            <div style="text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.04); padding-top: 20px;">
+                <p>© 2026 OTPHub. All rights reserved. Vận hành bởi hạ tầng GSM tự động.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toastNotify" class="toast-notify">
+        <span id="toastIcon">✅</span>
+        <span id="toastText">Đã sao chép!</span>
     </div>
 
-    <!-- Toast Notifications Container -->
-    <div class="toast-container" id="toast-container"></div>
+    <script>
+        const baseUrl = window.location.origin;
 
-    <script src="/admin/js/app.js"></script>
+        // Endpoint Data
+        const endpointData = {
+            request: {
+                title: "Thuê Số Nhận OTP",
+                desc: "Gửi yêu cầu thuê một số điện thoại mới cho dịch vụ chỉ định. Hệ thống sẽ giữ số và lắng nghe mã xác minh trong 120 giây.",
+                method: "GET",
+                path: "/request/getv2",
+                params: [
+                    { name: "apikey", type: "string", req: true, desc: "Mã API Key cá nhân của bạn" },
+                    { name: "service_id", type: "string", req: true, desc: "Mã dịch vụ cần thuê (VD: telegram, facebook, google...)" }
+                ],
+                curl: `curl -X GET "${baseUrl}/request/getv2?apikey=YOUR_API_KEY&service_id=telegram"`,
+                python: `import requests\n\nurl = "${baseUrl}/request/getv2"\nparams = {\n    "apikey": "YOUR_API_KEY",\n    "service_id": "telegram"\n}\nres = requests.get(url, params=params)\nprint(res.json())`,
+                node: `const axios = require('axios');\n\nasync function rentOtp() {\n  const res = await axios.get('${baseUrl}/request/getv2', {\n    params: { apikey: 'YOUR_API_KEY', service_id: 'telegram' }\n  });\n  console.log(res.data);\n}\nrentOtp();`,
+                php: `<?php\n$url = "${baseUrl}/request/getv2?apikey=YOUR_API_KEY&service_id=telegram";\n$response = file_get_contents($url);\n$data = json_decode($response, true);\nprint_r($data);`,
+                response: `{\n  "status": "success",\n  "request_id": "req_8f1a2c3e4b",\n  "phone_number": "0868123456",\n  "service_id": "telegram",\n  "price": 1500,\n  "expires_in": 120\n}`
+            },
+            session: {
+                title: "Lấy Mã OTP & Trạng Thái",
+                desc: "Kiểm tra xem tin nhắn SMS chứa mã OTP đã về chưa. Bạn nên gọi lặp lại (polling) mỗi 3-5 giây cho đến khi nhận được mã hoặc hết hạn.",
+                method: "GET",
+                path: "/session/getv2",
+                params: [
+                    { name: "apikey", type: "string", req: true, desc: "Mã API Key của bạn" },
+                    { name: "request_id", type: "string", req: true, desc: "Mã phiên nhận được từ lệnh thuê số" }
+                ],
+                curl: `curl -X GET "${baseUrl}/session/getv2?apikey=YOUR_API_KEY&request_id=req_8f1a2c3e4b"`,
+                python: `import requests\n\nurl = "${baseUrl}/session/getv2"\nparams = {\n    "apikey": "YOUR_API_KEY",\n    "request_id": "req_8f1a2c3e4b"\n}\nres = requests.get(url, params=params)\nprint(res.json())`,
+                node: `const axios = require('axios');\n\nasync function getOtp() {\n  const res = await axios.get('${baseUrl}/session/getv2', {\n    params: { apikey: 'YOUR_API_KEY', request_id: 'req_8f1a2c3e4b' }\n  });\n  console.log(res.data);\n}\ngetOtp();`,
+                php: `<?php\n$url = "${baseUrl}/session/getv2?apikey=YOUR_API_KEY&request_id=req_8f1a2c3e4b";\n$response = file_get_contents($url);\nprint_r(json_decode($response, true));`,
+                response: `{\n  "status": "COMPLETED",\n  "request_id": "req_8f1a2c3e4b",\n  "phone_number": "0868123456",\n  "otp": "49201",\n  "message": "Telegram code: 49201. Do not give it to anyone."\n}`
+            },
+            cancel: {
+                title: "Hủy Phiên & Hoàn Tiền",
+                desc: "Hủy phiên thuê số nếu bạn không muốn chờ nữa. Hệ thống sẽ lập tức hoàn trả 100% tiền lại số dư tài khoản của bạn.",
+                method: "GET",
+                path: "/session/cancel",
+                params: [
+                    { name: "apikey", type: "string", req: true, desc: "Mã API Key của bạn" },
+                    { name: "request_id", type: "string", req: true, desc: "Mã phiên cần hủy" }
+                ],
+                curl: `curl -X GET "${baseUrl}/session/cancel?apikey=YOUR_API_KEY&request_id=req_8f1a2c3e4b"`,
+                python: `import requests\n\nurl = "${baseUrl}/session/cancel"\nparams = {\n    "apikey": "YOUR_API_KEY",\n    "request_id": "req_8f1a2c3e4b"\n}\nres = requests.get(url, params=params)\nprint(res.json())`,
+                node: `const axios = require('axios');\n\nasync function cancelSession() {\n  const res = await axios.get('${baseUrl}/session/cancel', {\n    params: { apikey: 'YOUR_API_KEY', request_id: 'req_8f1a2c3e4b' }\n  });\n  console.log(res.data);\n}\ncancelSession();`,
+                php: `<?php\n$url = "${baseUrl}/session/cancel?apikey=YOUR_API_KEY&request_id=req_8f1a2c3e4b";\n$response = file_get_contents($url);\nprint_r(json_decode($response, true));`,
+                response: `{\n  "status": "success",\n  "message": "Đã hủy phiên thuê số và hoàn 1,500đ vào số dư."\n}`
+            },
+            balance: {
+                title: "Kiểm Tra Số Dư Tài Khoản",
+                desc: "Tra cứu số dư khả dụng hiện tại của tài khoản thông qua API Key.",
+                method: "GET",
+                path: "/users/balance",
+                params: [
+                    { name: "apikey", type: "string", req: true, desc: "Mã API Key của bạn" }
+                ],
+                curl: `curl -X GET "${baseUrl}/users/balance?apikey=YOUR_API_KEY"`,
+                python: `import requests\n\nurl = "${baseUrl}/users/balance"\nres = requests.get(url, params={"apikey": "YOUR_API_KEY"})\nprint(res.json())`,
+                node: `const axios = require('axios');\n\nasync function checkBalance() {\n  const res = await axios.get('${baseUrl}/users/balance', {\n    params: { apikey: 'YOUR_API_KEY' }\n  });\n  console.log(res.data);\n}\ncheckBalance();`,
+                php: `<?php\n$url = "${baseUrl}/users/balance?apikey=YOUR_API_KEY";\n$response = file_get_contents($url);\nprint_r(json_decode($response, true));`,
+                response: `{\n  "status": "success",\n  "user_id": "user_123456",\n  "balance": 50000,\n  "currency": "VND"\n}`
+            },
+            services: {
+                title: "Lấy Bảng Giá & Danh Sách Dịch Vụ",
+                desc: "Lấy toàn bộ danh sách các dịch vụ hiện có cùng đơn giá và trạng thái còn số hay không.",
+                method: "GET",
+                path: "/service/getv2",
+                params: [
+                    { name: "apikey", type: "string", req: false, desc: "Tùy chọn. Không bắt buộc" }
+                ],
+                curl: `curl -X GET "${baseUrl}/service/getv2"`,
+                python: `import requests\n\nurl = "${baseUrl}/service/getv2"\nres = requests.get(url)\nprint(res.json())`,
+                node: `const axios = require('axios');\n\nasync function getServices() {\n  const res = await axios.get('${baseUrl}/service/getv2');\n  console.log(res.data);\n}\ngetServices();`,
+                php: `<?php\n$url = "${baseUrl}/service/getv2";\n$response = file_get_contents($url);\nprint_r(json_decode($response, true));`,
+                response: `{\n  "status": "success",\n  "services": [\n    { "id": "telegram", "name": "Telegram", "price": 1500, "available": true },\n    { "id": "facebook", "name": "Facebook", "price": 1200, "available": true }\n  ]\n}`
+            }
+        };
+
+        let currentActiveEndpoint = 'request';
+        let currentActiveLang = 'curl';
+
+        function switchEndpoint(key) {
+            currentActiveEndpoint = key;
+            document.querySelectorAll('.endpoint-btn').forEach((btn, idx) => {
+                const keys = ['request', 'session', 'cancel', 'balance', 'services'];
+                btn.classList.toggle('active', keys[idx] === key);
+            });
+            renderDocs();
+        }
+
+        function switchLang(lang) {
+            currentActiveLang = lang;
+            document.querySelectorAll('.lang-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.lang === lang);
+            });
+            const data = endpointData[currentActiveEndpoint];
+            document.getElementById('codeDisplay').innerText = data[lang];
+        }
+
+        function renderDocs() {
+            const data = endpointData[currentActiveEndpoint];
+            const container = document.getElementById('docsMainContent');
+            
+            let paramsHtml = data.params.map(p => `
+                <tr>
+                    <td><strong>${p.name}</strong></td>
+                    <td><code>${p.type}</code></td>
+                    <td>${p.req ? '<span class="badge-req">Bắt buộc</span>' : '<span class="badge-opt">Tùy chọn</span>'}</td>
+                    <td>${p.desc}</td>
+                </tr>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="doc-header">
+                    <h3 class="doc-title">
+                        <span class="method-tag method-get">${data.method}</span>
+                        <span>${data.title}</span>
+                    </h3>
+                    <p style="color: var(--text-muted); font-size: 0.95rem;">${data.desc}</p>
+                    
+                    <div class="doc-url-box">
+                        <span>${baseUrl}${data.path}</span>
+                        <button class="copy-btn" onclick="copyText('${baseUrl}${data.path}')">Sao chép URL</button>
+                    </div>
+                </div>
+
+                <div class="params-title">Tham số yêu cầu (Parameters)</div>
+                <div class="table-responsive">
+                    <table class="api-table">
+                        <thead>
+                            <tr>
+                                <th>Tham Số</th>
+                                <th>Kiểu Dữ Liệu</th>
+                                <th>Yêu Cầu</th>
+                                <th>Mô Tả</th>
+                            </tr>
+                        </thead>
+                        <tbody>${paramsHtml}</tbody>
+                    </table>
+                </div>
+
+                <div class="params-title">Mẫu Code Gọi API (Code Examples)</div>
+                <div class="code-tabs-wrapper">
+                    <div class="code-tabs-header">
+                        <div class="code-lang-tabs">
+                            <button class="lang-tab ${currentActiveLang === 'curl' ? 'active' : ''}" data-lang="curl" onclick="switchLang('curl')">cURL</button>
+                            <button class="lang-tab ${currentActiveLang === 'python' ? 'active' : ''}" data-lang="python" onclick="switchLang('python')">Python</button>
+                            <button class="lang-tab ${currentActiveLang === 'node' ? 'active' : ''}" data-lang="node" onclick="switchLang('node')">Node.js</button>
+                            <button class="lang-tab ${currentActiveLang === 'php' ? 'active' : ''}" data-lang="php" onclick="switchLang('php')">PHP</button>
+                        </div>
+                        <button class="copy-btn" onclick="copyCurrentCode()">Sao chép Code</button>
+                    </div>
+                    <pre class="code-body"><code id="codeDisplay">${data[currentActiveLang]}</code></pre>
+                </div>
+
+                <div class="params-title" style="margin-top: 24px;">Phản Hồi Mẫu (Response JSON)</div>
+                <div class="code-tabs-wrapper">
+                    <div class="code-tabs-header">
+                        <span style="font-size: 0.8rem; color: var(--text-dim); padding-left: 6px;">HTTP Status 200 OK</span>
+                        <button class="copy-btn" onclick="copyText(endpointData['${currentActiveEndpoint}'].response)">Sao chép JSON</button>
+                    </div>
+                    <pre class="code-body"><code>${data.response}</code></pre>
+                </div>
+            `;
+        }
+
+        function copyCurrentCode() {
+            const data = endpointData[currentActiveEndpoint];
+            copyText(data[currentActiveLang]);
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Đã sao chép vào bộ nhớ tạm: " + text);
+            }).catch(() => {
+                showToast("Lỗi khi sao chép");
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toastNotify');
+            const toastText = document.getElementById('toastText');
+            toastText.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Live Balance Checker
+        async function checkApiKey() {
+            const key = document.getElementById('checkerApiKeyInput').value.trim();
+            if (!key) {
+                showToast("Vui lòng nhập API Key!");
+                return;
+            }
+
+            const resBox = document.getElementById('checkerResult');
+            const resStatus = document.getElementById('resStatus');
+            const resBalance = document.getElementById('resBalance');
+            const resUserId = document.getElementById('resUserId');
+
+            try {
+                const res = await fetch(`/users/balance?apikey=${encodeURIComponent(key)}`);
+                const data = await res.json();
+
+                if (res.ok && (data.status === 'success' || data.balance !== undefined)) {
+                    resStatus.innerText = "Hoạt Động";
+                    resStatus.style.color = "var(--accent-green)";
+                    resBalance.innerText = (data.balance || 0).toLocaleString() + " đ";
+                    resUserId.innerText = data.user_id || "Khách Hàng";
+                    resBox.style.display = 'block';
+                    showToast("Tra cứu thành công!");
+                } else {
+                    resStatus.innerText = "Không Hợp Lệ";
+                    resStatus.style.color = "var(--accent-red)";
+                    resBalance.innerText = "0 đ";
+                    resUserId.innerText = data.message || "Key không tồn tại";
+                    resBox.style.display = 'block';
+                    showToast("API Key không hợp lệ!");
+                }
+            } catch (err) {
+                showToast("Lỗi kết nối kiểm tra số dư");
+            }
+        }
+
+        // Filter Services
+        function filterServices() {
+            const input = document.getElementById('serviceSearchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#servicesTableBody tr');
+            rows.forEach(r => {
+                const text = r.innerText.toLowerCase();
+                r.style.display = text.includes(input) ? '' : 'none';
+            });
+        }
+
+        // Load Real Services from Backend if available
+        async function fetchLiveServices() {
+            try {
+                const res = await fetch('/service/getv2');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.services && Array.isArray(data.services) && data.services.length > 0) {
+                        const tbody = document.getElementById('servicesTableBody');
+                        tbody.innerHTML = data.services.map(s => `
+                            <tr>
+                                <td><code>${s.id || s.service_id}</code></td>
+                                <td><strong>${s.name || s.id}</strong></td>
+                                <td><span class="price-badge">${(s.price || 1500).toLocaleString()} đ</span></td>
+                                <td><span class="status-badge">● ${s.available !== false ? 'Sẵn sàng' : 'Tạm hết'}</span></td>
+                                <td><button class="copy-btn" onclick="copyText('${s.id || s.service_id}')">Sao chép ID</button></td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+            } catch (e) {
+                // Keep default popular list
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDocs();
+            fetchLiveServices();
+        });
+    </script>
 </body>
 
 </html>
