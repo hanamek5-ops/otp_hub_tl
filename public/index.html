@@ -1166,80 +1166,80 @@
     <script>
         const baseUrl = window.location.origin;
 
-        // Endpoint Data
+        // Endpoint Data matching OTPHub Gateway standard
         const endpointData = {
-            request: {
-                title: "Thuê Số Nhận OTP",
-                desc: "Gửi yêu cầu thuê một số điện thoại mới cho dịch vụ chỉ định. Hệ thống sẽ giữ số và lắng nghe mã xác minh trong 120 giây.",
-                method: "GET",
-                path: "/request/getv2",
-                params: [
-                    { name: "apikey", type: "string", req: true, desc: "Mã API Key cá nhân của bạn" },
-                    { name: "service_id", type: "string", req: true, desc: "Mã dịch vụ cần thuê (VD: telegram, facebook, google...)" }
-                ],
-                curl: `curl -X GET "${baseUrl}/request/getv2?apikey=YOUR_API_KEY&service_id=telegram"`,
-                python: `import requests\n\nurl = "${baseUrl}/request/getv2"\nparams = {\n    "apikey": "YOUR_API_KEY",\n    "service_id": "telegram"\n}\nres = requests.get(url, params=params)\nprint(res.json())`,
-                node: `const axios = require('axios');\n\nasync function rentOtp() {\n  const res = await axios.get('${baseUrl}/request/getv2', {\n    params: { apikey: 'YOUR_API_KEY', service_id: 'telegram' }\n  });\n  console.log(res.data);\n}\nrentOtp();`,
-                php: `<?php\n$url = "${baseUrl}/request/getv2?apikey=YOUR_API_KEY&service_id=telegram";\n$response = file_get_contents($url);\n$data = json_decode($response, true);\nprint_r($data);`,
-                response: `{\n  "status": "success",\n  "request_id": "req_8f1a2c3e4b",\n  "phone_number": "0868123456",\n  "service_id": "telegram",\n  "price": 1500,\n  "expires_in": 120\n}`
-            },
-            session: {
-                title: "Lấy Mã OTP & Trạng Thái",
-                desc: "Kiểm tra xem tin nhắn SMS chứa mã OTP đã về chưa. Bạn nên gọi lặp lại (polling) mỗi 3-5 giây cho đến khi nhận được mã hoặc hết hạn.",
-                method: "GET",
-                path: "/session/getv2",
-                params: [
-                    { name: "apikey", type: "string", req: true, desc: "Mã API Key của bạn" },
-                    { name: "request_id", type: "string", req: true, desc: "Mã phiên nhận được từ lệnh thuê số" }
-                ],
-                curl: `curl -X GET "${baseUrl}/session/getv2?apikey=YOUR_API_KEY&request_id=req_8f1a2c3e4b"`,
-                python: `import requests\n\nurl = "${baseUrl}/session/getv2"\nparams = {\n    "apikey": "YOUR_API_KEY",\n    "request_id": "req_8f1a2c3e4b"\n}\nres = requests.get(url, params=params)\nprint(res.json())`,
-                node: `const axios = require('axios');\n\nasync function getOtp() {\n  const res = await axios.get('${baseUrl}/session/getv2', {\n    params: { apikey: 'YOUR_API_KEY', request_id: 'req_8f1a2c3e4b' }\n  });\n  console.log(res.data);\n}\ngetOtp();`,
-                php: `<?php\n$url = "${baseUrl}/session/getv2?apikey=YOUR_API_KEY&request_id=req_8f1a2c3e4b";\n$response = file_get_contents($url);\nprint_r(json_decode($response, true));`,
-                response: `{\n  "status": "COMPLETED",\n  "request_id": "req_8f1a2c3e4b",\n  "phone_number": "0868123456",\n  "otp": "49201",\n  "message": "Telegram code: 49201. Do not give it to anyone."\n}`
-            },
-            cancel: {
-                title: "Hủy Phiên & Hoàn Tiền",
-                desc: "Hủy phiên thuê số nếu bạn không muốn chờ nữa. Hệ thống sẽ lập tức hoàn trả 100% tiền lại số dư tài khoản của bạn.",
-                method: "GET",
-                path: "/session/cancel",
-                params: [
-                    { name: "apikey", type: "string", req: true, desc: "Mã API Key của bạn" },
-                    { name: "request_id", type: "string", req: true, desc: "Mã phiên cần hủy" }
-                ],
-                curl: `curl -X GET "${baseUrl}/session/cancel?apikey=YOUR_API_KEY&request_id=req_8f1a2c3e4b"`,
-                python: `import requests\n\nurl = "${baseUrl}/session/cancel"\nparams = {\n    "apikey": "YOUR_API_KEY",\n    "request_id": "req_8f1a2c3e4b"\n}\nres = requests.get(url, params=params)\nprint(res.json())`,
-                node: `const axios = require('axios');\n\nasync function cancelSession() {\n  const res = await axios.get('${baseUrl}/session/cancel', {\n    params: { apikey: 'YOUR_API_KEY', request_id: 'req_8f1a2c3e4b' }\n  });\n  console.log(res.data);\n}\ncancelSession();`,
-                php: `<?php\n$url = "${baseUrl}/session/cancel?apikey=YOUR_API_KEY&request_id=req_8f1a2c3e4b";\n$response = file_get_contents($url);\nprint_r(json_decode($response, true));`,
-                response: `{\n  "status": "success",\n  "message": "Đã hủy phiên thuê số và hoàn 1,500đ vào số dư."\n}`
-            },
             balance: {
-                title: "Kiểm Tra Số Dư Tài Khoản",
-                desc: "Tra cứu số dư khả dụng hiện tại của tài khoản thông qua API Key.",
+                title: "1. Kiểm Tra Số Dư Ví",
+                desc: "Tra cứu số dư khả dụng hiện tại của tài khoản thông qua API Key (tham số token).",
                 method: "GET",
-                path: "/users/balance",
+                path: "/users/balance?token={API_KEY}",
                 params: [
-                    { name: "apikey", type: "string", req: true, desc: "Mã API Key của bạn" }
+                    { name: "token", type: "string", req: true, desc: "Mã API Key cá nhân của bạn được cấp từ Telegram Bot" }
                 ],
-                curl: `curl -X GET "${baseUrl}/users/balance?apikey=YOUR_API_KEY"`,
-                python: `import requests\n\nurl = "${baseUrl}/users/balance"\nres = requests.get(url, params={"apikey": "YOUR_API_KEY"})\nprint(res.json())`,
-                node: `const axios = require('axios');\n\nasync function checkBalance() {\n  const res = await axios.get('${baseUrl}/users/balance', {\n    params: { apikey: 'YOUR_API_KEY' }\n  });\n  console.log(res.data);\n}\ncheckBalance();`,
-                php: `<?php\n$url = "${baseUrl}/users/balance?apikey=YOUR_API_KEY";\n$response = file_get_contents($url);\nprint_r(json_decode($response, true));`,
-                response: `{\n  "status": "success",\n  "user_id": "user_123456",\n  "balance": 50000,\n  "currency": "VND"\n}`
+                curl: `curl -X GET "${baseUrl}/users/balance?token=YOUR_API_KEY"`,
+                python: `import requests\n\nurl = "${baseUrl}/users/balance"\nres = requests.get(url, params={"token": "YOUR_API_KEY"})\nprint(res.json())`,
+                node: `const axios = require('axios');\n\nasync function checkBalance() {\n  const res = await axios.get('${baseUrl}/users/balance', {\n    params: { token: 'YOUR_API_KEY' }\n  });\n  console.log(res.data);\n}\ncheckBalance();`,
+                php: `<?php\n$url = "${baseUrl}/users/balance?token=YOUR_API_KEY";\n$response = file_get_contents($url);\nprint_r(json_decode($response, true));`,
+                response: `{\n  "status_code": 200,\n  "message": "Success",\n  "data": {\n    "balance": 150000\n  }\n}`
             },
             services: {
-                title: "Lấy Bảng Giá & Danh Sách Dịch Vụ",
-                desc: "Lấy toàn bộ danh sách các dịch vụ hiện có cùng đơn giá và trạng thái còn số hay không.",
+                title: "2. Lấy Danh Sách Dịch Vụ & Giá Cước",
+                desc: "Lấy toàn bộ danh sách các dịch vụ hiện có cùng đơn giá và ID dịch vụ để thuê số.",
                 method: "GET",
-                path: "/service/getv2",
+                path: "/service/getv2?token={API_KEY}",
                 params: [
-                    { name: "apikey", type: "string", req: false, desc: "Tùy chọn. Không bắt buộc" }
+                    { name: "token", type: "string", req: false, desc: "Mã API Key (Tùy chọn)" }
                 ],
-                curl: `curl -X GET "${baseUrl}/service/getv2"`,
-                python: `import requests\n\nurl = "${baseUrl}/service/getv2"\nres = requests.get(url)\nprint(res.json())`,
-                node: `const axios = require('axios');\n\nasync function getServices() {\n  const res = await axios.get('${baseUrl}/service/getv2');\n  console.log(res.data);\n}\ngetServices();`,
-                php: `<?php\n$url = "${baseUrl}/service/getv2";\n$response = file_get_contents($url);\nprint_r(json_decode($response, true));`,
-                response: `{\n  "status": "success",\n  "services": [\n    { "id": "telegram", "name": "Telegram", "price": 1500, "available": true },\n    { "id": "facebook", "name": "Facebook", "price": 1200, "available": true }\n  ]\n}`
+                curl: `curl -X GET "${baseUrl}/service/getv2?token=YOUR_API_KEY"`,
+                python: `import requests\n\nurl = "${baseUrl}/service/getv2"\nres = requests.get(url, params={"token": "YOUR_API_KEY"})\nprint(res.json())`,
+                node: `const axios = require('axios');\n\nasync function getServices() {\n  const res = await axios.get('${baseUrl}/service/getv2', {\n    params: { token: 'YOUR_API_KEY' }\n  });\n  console.log(res.data);\n}\ngetServices();`,
+                php: `<?php\n$url = "${baseUrl}/service/getv2?token=YOUR_API_KEY";\n$response = file_get_contents($url);\nprint_r(json_decode($response, true));`,
+                response: `{\n  "status_code": 200,\n  "message": "Success",\n  "data": [\n    { "id": "shopee", "name": "Shopee / ShopeePay", "price": 5000 },\n    { "id": "google", "name": "Gmail / Google", "price": 3400 },\n    { "id": "telegram", "name": "Telegram", "price": 13000 }\n  ]\n}`
+            },
+            request: {
+                title: "3. Yêu Cầu Cấp Số Điện Thoại (Thuê Số)",
+                desc: "Yêu cầu cấp 1 số điện thoại nhận OTP theo mã dịch vụ serviceId. Hệ thống giữ số và lắng nghe OTP tự động.",
+                method: "GET / POST",
+                path: "/request/getv2?token={API_KEY}&serviceId=shopee",
+                params: [
+                    { name: "token", type: "string", req: true, desc: "Mã API Key của bạn" },
+                    { name: "serviceId", type: "string", req: true, desc: "Mã dịch vụ cần thuê (VD: shopee, google, telegram...)" }
+                ],
+                curl: `curl -X GET "${baseUrl}/request/getv2?token=YOUR_API_KEY&serviceId=shopee"`,
+                python: `import requests\n\nurl = "${baseUrl}/request/getv2"\nparams = {\n    "token": "YOUR_API_KEY",\n    "serviceId": "shopee"\n}\nres = requests.get(url, params=params)\nprint(res.json())`,
+                node: `const axios = require('axios');\n\nasync function rentOtp() {\n  const res = await axios.get('${baseUrl}/request/getv2', {\n    params: { token: 'YOUR_API_KEY', serviceId: 'shopee' }\n  });\n  console.log(res.data);\n}\nrentOtp();`,
+                php: `<?php\n$url = "${baseUrl}/request/getv2?token=YOUR_API_KEY&serviceId=shopee";\n$response = file_get_contents($url);\nprint_r(json_decode($response, true));`,
+                response: `{\n  "status_code": 200,\n  "message": "Success",\n  "data": {\n    "request_id": "SES4fa2b7194",\n    "phone_number": "0398765432",\n    "service_id": "shopee",\n    "service_name": "Shopee / ShopeePay",\n    "price": 5000,\n    "status": 0,\n    "created_time": "2026-10-06T11:20:00.000Z",\n    "balance": 145000\n  }\n}`
+            },
+            session: {
+                title: "4. Lấy Mã OTP & Kiểm Tra Trạng Thái Phiên",
+                desc: "Kiểm tra mã OTP theo requestId. * Quy ước Status: 0 = Đang chờ OTP | 1 = Thành công có mã | 2 = Hết hạn hoặc đã hủy.",
+                method: "GET",
+                path: "/session/getv2?requestId={REQUEST_ID}&token={API_KEY}",
+                params: [
+                    { name: "requestId", type: "string", req: true, desc: "Mã phiên (ID) nhận được từ lệnh thuê số" },
+                    { name: "token", type: "string", req: true, desc: "Mã API Key của bạn" }
+                ],
+                curl: `curl -X GET "${baseUrl}/session/getv2?requestId=SES4fa2b7194&token=YOUR_API_KEY"`,
+                python: `import requests\n\nurl = "${baseUrl}/session/getv2"\nparams = {\n    "requestId": "SES4fa2b7194",\n    "token": "YOUR_API_KEY"\n}\nres = requests.get(url, params=params)\nprint(res.json())`,
+                node: `const axios = require('axios');\n\nasync function getOtp() {\n  const res = await axios.get('${baseUrl}/session/getv2', {\n    params: { requestId: 'SES4fa2b7194', token: 'YOUR_API_KEY' }\n  });\n  console.log(res.data);\n}\ngetOtp();`,
+                php: `<?php\n$url = "${baseUrl}/session/getv2?requestId=SES4fa2b7194&token=YOUR_API_KEY";\n$response = file_get_contents($url);\nprint_r(json_decode($response, true));`,
+                response: `{\n  "status_code": 200,\n  "message": "Success",\n  "data": {\n    "ID": "SES4fa2b7194",\n    "Phone": "0398765432",\n    "ServiceID": "shopee",\n    "ServiceName": "Shopee / ShopeePay",\n    "Status": 1,\n    "Price": 5000,\n    "Code": "849201",\n    "SmsContent": "Ma OTP Shopee cua ban la 849201",\n    "IsSound": false,\n    "CreatedTime": "2026-10-06T11:20:00.000Z"\n  }\n}`
+            },
+            cancel: {
+                title: "5. Hủy Số Khi Chưa Có OTP (Hoàn Tiền Ngay)",
+                desc: "Hủy phiên thuê số khi chưa có OTP. Hệ thống sẽ hoàn tiền 100% ngay lập tức vào ví.",
+                method: "GET / POST",
+                path: "/session/cancel?requestId={REQUEST_ID}&token={API_KEY}",
+                params: [
+                    { name: "requestId", type: "string", req: true, desc: "Mã phiên cần hủy" },
+                    { name: "token", type: "string", req: true, desc: "Mã API Key của bạn" }
+                ],
+                curl: `curl -X GET "${baseUrl}/session/cancel?requestId=SES4fa2b7194&token=YOUR_API_KEY"`,
+                python: `import requests\n\nurl = "${baseUrl}/session/cancel"\nparams = {\n    "requestId": "SES4fa2b7194",\n    "token": "YOUR_API_KEY"\n}\nres = requests.get(url, params=params)\nprint(res.json())`,
+                node: `const axios = require('axios');\n\nasync function cancelSession() {\n  const res = await axios.get('${baseUrl}/session/cancel', {\n    params: { requestId: 'SES4fa2b7194', token: 'YOUR_API_KEY' }\n  });\n  console.log(res.data);\n}\ncancelSession();`,
+                php: `<?php\n$url = "${baseUrl}/session/cancel?requestId=SES4fa2b7194&token=YOUR_API_KEY";\n$response = file_get_contents($url);\nprint_r(json_decode($response, true));`,
+                response: `{\n  "status_code": 200,\n  "message": "Hủy yêu cầu thành công, số tiền đã được hoàn lại vào ví",\n  "data": {\n    "ID": "SES4fa2b7194",\n    "Status": 2,\n    "Refunded": 5000,\n    "Balance": 150000\n  }\n}`
             }
         };
 
@@ -1249,7 +1249,7 @@
         function switchEndpoint(key) {
             currentActiveEndpoint = key;
             document.querySelectorAll('.endpoint-btn').forEach((btn, idx) => {
-                const keys = ['request', 'session', 'cancel', 'balance', 'services'];
+                const keys = ['balance', 'services', 'request', 'session', 'cancel'];
                 btn.classList.toggle('active', keys[idx] === key);
             });
             renderDocs();
@@ -1368,14 +1368,15 @@
             const resUserId = document.getElementById('resUserId');
 
             try {
-                const res = await fetch(`/users/balance?apikey=${encodeURIComponent(key)}`);
+                const res = await fetch(`/users/balance?token=${encodeURIComponent(key)}`);
                 const data = await res.json();
 
-                if (res.ok && (data.status === 'success' || data.balance !== undefined)) {
+                if (res.ok && (data.status_code === 200 || data.data)) {
+                    const bal = data.data?.balance !== undefined ? data.data.balance : (data.balance || 0);
                     resStatus.innerText = "Hoạt Động";
                     resStatus.style.color = "var(--accent-green)";
-                    resBalance.innerText = (data.balance || 0).toLocaleString() + " đ";
-                    resUserId.innerText = data.user_id || "Khách Hàng";
+                    resBalance.innerText = Number(bal).toLocaleString() + " đ";
+                    resUserId.innerText = "Đã xác thực";
                     resBox.style.display = 'block';
                     showToast("Tra cứu thành công!");
                 } else {
@@ -1384,7 +1385,7 @@
                     resBalance.innerText = "0 đ";
                     resUserId.innerText = data.message || "Key không tồn tại";
                     resBox.style.display = 'block';
-                    showToast("API Key không hợp lệ!");
+                    showToast(data.message || "API Key không hợp lệ!");
                 }
             } catch (err) {
                 showToast("Lỗi kết nối kiểm tra số dư");
@@ -1407,9 +1408,10 @@
                 const res = await fetch('/service/getv2');
                 if (res.ok) {
                     const data = await res.json();
-                    if (data && data.services && Array.isArray(data.services) && data.services.length > 0) {
+                    const list = Array.isArray(data.data) ? data.data : (Array.isArray(data.services) ? data.services : []);
+                    if (list.length > 0) {
                         const tbody = document.getElementById('servicesTableBody');
-                        tbody.innerHTML = data.services.map(s => `
+                        tbody.innerHTML = list.map(s => `
                             <tr>
                                 <td><code>${s.id || s.service_id}</code></td>
                                 <td><strong>${s.name || s.id}</strong></td>
