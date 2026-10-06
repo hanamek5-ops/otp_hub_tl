@@ -42,6 +42,7 @@ async function handleBalance(req, res) {
 // 2. Danh sách dịch vụ & giá
 async function handleServices(req, res) {
     const services = await mgr.getServices();
+    const cfg = await mgr.getConfig();
     const enabledServices = services
         .filter(s => s.enabled)
         .map(s => ({
@@ -53,6 +54,7 @@ async function handleServices(req, res) {
     return res.status(200).json({
         status_code: 200,
         message: 'Success',
+        contact: cfg.admin_contact || process.env.ADMIN_CONTACT || '',
         data: enabledServices
     });
 }

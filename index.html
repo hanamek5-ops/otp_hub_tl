@@ -1131,7 +1131,7 @@
                     <a href="https://t.me/gsmotp5s_bot" target="_blank" class="btn btn-primary" style="padding: 14px 28px; font-size: 1rem;">
                         🤖 Nhận API Key Qua Bot Telegram
                     </a>
-                    <a href="https://t.me/tralaicuocsongchochinhminh" target="_blank" class="btn btn-outline" style="padding: 14px 28px; font-size: 1rem;">
+                    <a href="https://t.me/tralaicuocsongchochinhminh" target="_blank" class="btn btn-outline" id="supportContactBtn" style="padding: 14px 28px; font-size: 1rem;">
                         💬 Hỗ Trợ Kỹ Thuật 24/7
                     </a>
                 </div>
@@ -1420,10 +1420,17 @@
                                 <td><button class="copy-btn" onclick="copyText('${s.id || s.service_id}')">Sao chép ID</button></td>
                             </tr>
                         `).join('');
+                    if (data.contact) {
+                        const contactBtn = document.getElementById('supportContactBtn');
+                        if (contactBtn) {
+                            const cleanContact = data.contact.replace(/^@/, '');
+                            contactBtn.href = data.contact.startsWith('http') ? data.contact : `https://t.me/${cleanContact}`;
+                            contactBtn.innerHTML = `💬 Hỗ Trợ: <strong>${data.contact}</strong>`;
+                        }
                     }
                 }
             } catch (e) {
-                // Keep default popular list
+                // Keep default list
             }
         }
 
