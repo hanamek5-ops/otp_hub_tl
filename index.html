@@ -1248,8 +1248,8 @@
 
         function switchEndpoint(key) {
             currentActiveEndpoint = key;
+            const keys = ['request', 'session', 'cancel', 'balance', 'services'];
             document.querySelectorAll('.endpoint-btn').forEach((btn, idx) => {
-                const keys = ['balance', 'services', 'request', 'session', 'cancel'];
                 btn.classList.toggle('active', keys[idx] === key);
             });
             renderDocs();
@@ -1420,6 +1420,7 @@
                                 <td><button class="copy-btn" onclick="copyText('${s.id || s.service_id}')">Sao chép ID</button></td>
                             </tr>
                         `).join('');
+                    }
                     if (data.contact) {
                         const contactBtn = document.getElementById('supportContactBtn');
                         if (contactBtn) {
