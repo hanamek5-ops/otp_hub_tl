@@ -850,7 +850,6 @@
 
             <ul class="nav-menu">
                 <li><a href="#features" class="nav-link">Tính Năng</a></li>
-                <li><a href="#services" class="nav-link">Bảng Giá Dịch Vụ</a></li>
                 <li><a href="#documentation" class="nav-link">Tài Liệu API</a></li>
                 <li><a href="#balance-checker" class="nav-link">Tra Cứu Key</a></li>
             </ul>
@@ -951,90 +950,6 @@
                     <div class="feature-icon-box">🤖</div>
                     <h3>Nạp Tiền Qua Telegram</h3>
                     <p>Nạp tiền tự động qua QR Code ngân hàng 24/7 và nhận API Key ngay trên Telegram bot chỉ trong vài giây.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Services & Pricing Table -->
-    <section class="section pricing-section" id="services">
-        <div class="container">
-            <div class="section-header">
-                <div class="section-tag">BẢNG GIÁ DỊCH VỤ</div>
-                <h2 class="section-title">Bảng Dịch Vụ & Đơn Giá Thuê Số</h2>
-                <p class="section-desc">Đơn giá cạnh tranh, chỉ trừ tiền khi nhận mã thành công. Sử dụng `service_id` bên dưới khi gọi API.</p>
-            </div>
-
-            <div class="service-search-box">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="serviceSearchInput" class="search-input" placeholder="Tìm dịch vụ (VD: Telegram, Facebook, Google...)" onkeyup="filterServices()">
-            </div>
-
-            <div class="service-table-card">
-                <div class="table-responsive">
-                    <table class="table-custom">
-                        <thead>
-                            <tr>
-                                <th>Service ID</th>
-                                <th>Tên Dịch Vụ</th>
-                                <th>Đơn Giá / OTP</th>
-                                <th>Trạng Thái</th>
-                                <th>Thao Tác</th>
-                            </tr>
-                        </thead>
-                        <tbody id="servicesTableBody">
-                            <!-- Populated by JavaScript -->
-                            <tr>
-                                <td><code>telegram</code></td>
-                                <td><strong>Telegram Messenger</strong></td>
-                                <td><span class="price-badge">1,500 đ</span></td>
-                                <td><span class="status-badge">● Sẵn sàng</span></td>
-                                <td><button class="copy-btn" onclick="copyText('telegram')">Sao chép ID</button></td>
-                            </tr>
-                            <tr>
-                                <td><code>facebook</code></td>
-                                <td><strong>Facebook / Meta</strong></td>
-                                <td><span class="price-badge">1,200 đ</span></td>
-                                <td><span class="status-badge">● Sẵn sàng</span></td>
-                                <td><button class="copy-btn" onclick="copyText('facebook')">Sao chép ID</button></td>
-                            </tr>
-                            <tr>
-                                <td><code>google</code></td>
-                                <td><strong>Google / Gmail / YouTube</strong></td>
-                                <td><span class="price-badge">1,500 đ</span></td>
-                                <td><span class="status-badge">● Sẵn sàng</span></td>
-                                <td><button class="copy-btn" onclick="copyText('google')">Sao chép ID</button></td>
-                            </tr>
-                            <tr>
-                                <td><code>tiktok</code></td>
-                                <td><strong>TikTok Global</strong></td>
-                                <td><span class="price-badge">1,000 đ</span></td>
-                                <td><span class="status-badge">● Sẵn sàng</span></td>
-                                <td><button class="copy-btn" onclick="copyText('tiktok')">Sao chép ID</button></td>
-                            </tr>
-                            <tr>
-                                <td><code>shopee</code></td>
-                                <td><strong>Shopee Việt Nam</strong></td>
-                                <td><span class="price-badge">1,200 đ</span></td>
-                                <td><span class="status-badge">● Sẵn sàng</span></td>
-                                <td><button class="copy-btn" onclick="copyText('shopee')">Sao chép ID</button></td>
-                            </tr>
-                            <tr>
-                                <td><code>zalo</code></td>
-                                <td><strong>Zalo App</strong></td>
-                                <td><span class="price-badge">2,000 đ</span></td>
-                                <td><span class="status-badge">● Sẵn sàng</span></td>
-                                <td><button class="copy-btn" onclick="copyText('zalo')">Sao chép ID</button></td>
-                            </tr>
-                            <tr>
-                                <td><code>other</code></td>
-                                <td><strong>Dịch vụ Khác (Mặc định)</strong></td>
-                                <td><span class="price-badge">1,000 đ</span></td>
-                                <td><span class="status-badge">● Sẵn sàng</span></td>
-                                <td><button class="copy-btn" onclick="copyText('other')">Sao chép ID</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
@@ -1392,36 +1307,13 @@
             }
         }
 
-        // Filter Services
-        function filterServices() {
-            const input = document.getElementById('serviceSearchInput').value.toLowerCase();
-            const rows = document.querySelectorAll('#servicesTableBody tr');
-            rows.forEach(r => {
-                const text = r.innerText.toLowerCase();
-                r.style.display = text.includes(input) ? '' : 'none';
-            });
-        }
-
-        // Load Real Services from Backend if available
-        async function fetchLiveServices() {
+        // Load Real Config from Backend (Admin contact)
+        async function fetchLiveConfig() {
             try {
                 const res = await fetch('/service/getv2');
                 if (res.ok) {
                     const data = await res.json();
-                    const list = Array.isArray(data.data) ? data.data : (Array.isArray(data.services) ? data.services : []);
-                    if (list.length > 0) {
-                        const tbody = document.getElementById('servicesTableBody');
-                        tbody.innerHTML = list.map(s => `
-                            <tr>
-                                <td><code>${s.id || s.service_id}</code></td>
-                                <td><strong>${s.name || s.id}</strong></td>
-                                <td><span class="price-badge">${(s.price || 1500).toLocaleString()} đ</span></td>
-                                <td><span class="status-badge">● ${s.available !== false ? 'Sẵn sàng' : 'Tạm hết'}</span></td>
-                                <td><button class="copy-btn" onclick="copyText('${s.id || s.service_id}')">Sao chép ID</button></td>
-                            </tr>
-                        `).join('');
-                    }
-                    if (data.contact) {
+                    if (data && data.contact) {
                         const contactBtn = document.getElementById('supportContactBtn');
                         if (contactBtn) {
                             const cleanContact = data.contact.replace(/^@/, '');
@@ -1431,14 +1323,14 @@
                     }
                 }
             } catch (e) {
-                // Keep default list
+                // Keep default
             }
         }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             renderDocs();
-            fetchLiveServices();
+            fetchLiveConfig();
         });
     </script>
 </body>
