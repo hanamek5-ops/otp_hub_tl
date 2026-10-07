@@ -292,6 +292,22 @@ async function handleCancel(req, res) {
         });
     }
 
+    // Khóa phân tán Idempotency 3 ngày: Chống spam gọi cancel hoàn tiền nhiều lần
+    const refundLockKey = `otphub:lock:refund:${session.id}`;
+    let canRefund = false;
+    try {
+        canRefund = await redis.set(refundLockKey, '1', { nx: true, ex: 86400 * 3 });
+    } catch (_) {
+        canRefund = false;
+    }
+    if (!canRefund) {
+        return res.status(400).json({
+            status_code: 400,
+            message: 'Yêu cầu này đã được hủy hoặc hoàn tiền trước đó',
+            data: null
+        });
+    }
+
     session.status = 'cancelled';
     sessions[targetIndex] = session;
 
