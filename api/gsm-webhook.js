@@ -10,6 +10,14 @@ export default async function handler(req, res) {
         return res.status(200).json({ status: 'GSM Webhook Listener Ready' });
     }
 
+    const gsmSecret = process.env.GSM_WEBHOOK_SECRET;
+    if (gsmSecret) {
+        const incomingSecret = req.headers['x-gsm-secret'] || req.query.secret;
+        if (incomingSecret !== gsmSecret) {
+            return res.status(401).json({ error: 'Unauthorized: GSM Secret mismatch' });
+        }
+    }
+
     try {
         let body = req.body;
         if (typeof body === 'string') {

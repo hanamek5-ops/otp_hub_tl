@@ -145,6 +145,14 @@ async function handleCreateDepositInvoice(chatId, user, amountUsdt) {
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(200).send('Bot Running');
+
+    const tgSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+    if (tgSecret) {
+        const incomingToken = req.headers['x-telegram-bot-api-secret-token'];
+        if (incomingToken !== tgSecret) {
+            return res.status(401).send('Unauthorized');
+        }
+    }
     let update = req.body;
     if (Buffer.isBuffer(update)) {
         try {
@@ -720,23 +728,49 @@ export default async function handler(req, res) {
                     return res.status(200).json({ ok: true });
                 }
 
-                const inv = chk.invoice;
+                let inv = chk.invoice;
+                if (!inv.amount || !inv.vnd_amount) {
+                    try {
+                        const cached = await redis.get(`otphub:invoice:${transId}`);
+                        if (cached) inv = { ...cached, ...inv };
+                    } catch (_) { }
+                }
+
                 if (inv.status === 'completed') {
                     const creditedKey = `otphub:credited:${inv.trans_id}`;
                     const already = await redis.get(creditedKey);
                     if (!already) {
+                        const finalReceived = Number(inv.amount || inv.received || 0);
                         const rate = Number(inv.vnd_rate) || 26000;
-                        const vndAmt = Number(inv.vnd_amount) || Math.round(Number(inv.amount) * rate);
+                        const vndAmt = Number(inv.vnd_amount) || Math.round(finalReceived * rate);
+
+                        if (isNaN(vndAmt) || vndAmt <= 0) {
+                            console.error('[Check Dep Error] Invalid vndAmt:', { vndAmt, finalReceived, rate, inv });
+                            await bot.answerCallbackQuery(cq.id, '❌ Dữ liệu hoá đơn chưa đầy đủ số tiền. Vui lòng liên hệ Admin!', true);
+                            return res.status(200).json({ ok: true });
+                        }
+
                         const newBal = await mgr.updateBalance(userId, vndAmt);
                         await redis.set(creditedKey, '1', { ex: 86400 * 30 });
+                        if (inv.request_id) {
+                            await redis.set(`otphub:credited:${inv.request_id}`, '1', { ex: 86400 * 30 });
+                        }
                         await bot.sendMessage(chatId, 
                             `🎉 <b>NẠP TIỀN THÀNH CÔNG!</b>\n` +
                             `━━━━━━━━━━━━━━━━━━━━\n` +
-                            `💵 Đã nhận: <b>+${inv.amount} USDT</b>\n` +
+                            `💵 Đã nhận: <b>+${finalReceived} USDT</b>\n` +
                             `💰 Quy đổi: <b>+${money(vndAmt)}</b>\n` +
+                            `📈 Tỉ giá: <b>${money(rate)} / USDT</b>\n` +
                             `💰 TK Chính mới: <b>${Number(newBal).toLocaleString('en-US')} VNĐ</b>\n` +
+                            `🔗 Mã hoá đơn: <code>${inv.trans_id}</code>\n` +
                             `━━━━━━━━━━━━━━━━━━━━\n` +
-                            `<i>Cảm ơn bạn đã nạp tiền!</i>`
+                            `<i>Cảm ơn bạn đã nạp tiền! Chúc bạn sử dụng dịch vụ vui vẻ!</i>`,
+                            {
+                                inline_keyboard: [
+                                    [{ text: '🛒 Thuê số OTP ngay', callback_data: 'menu_rent' }],
+                                    [{ text: '◀️ Menu chính', callback_data: 'menu_main' }]
+                                ]
+                            }
                         );
                     }
                     await bot.answerCallbackQuery(cq.id, '🎉 Hoá đơn đã thanh toán thành công và tiền đã được cộng!', true);

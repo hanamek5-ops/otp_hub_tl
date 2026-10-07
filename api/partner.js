@@ -175,7 +175,7 @@ async function handleSession(req, res) {
 
     const rawSessions = (await redis.lrange(KEYS.SESSIONS, 0, 500)) || [];
     const sessions = rawSessions.map(parseSession);
-    const session = sessions.find(s => s.id === reqId && String(s.user_id) === String(user.id));
+    let session = sessions.find(s => s.id === reqId && String(s.user_id) === String(user.id));
 
     if (!session) {
         return res.status(404).json({
@@ -183,6 +183,16 @@ async function handleSession(req, res) {
             message: `Không tìm thấy phiên thuê ${reqId} của tài khoản này`,
             data: null
         });
+    }
+
+    // Nếu phiên vẫn đang chờ: tự động kích hoạt tra soát SMS GSM ngay tức thì (< 0.2s)!
+    if (session.status === 'waiting' && Date.now() < (session.end_time || 0)) {
+        try {
+            const check = await mgr.checkSessionOtp(session.id);
+            if (check?.found && check.session) {
+                session = check.session;
+            }
+        } catch (_) {}
     }
 
     let sessionStatusCode = 0;

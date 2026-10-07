@@ -30,6 +30,13 @@ export default async function handler(req, res) {
     let cycles = 0;
 
     try {
+        // Tự động kiểm tra và cộng tiền các hoá đơn nạp CheckGD chưa được xử lý
+        try {
+            await mgr.checkPendingInvoices();
+        } catch (invErr) {
+            console.error('Cron invoice check warning:', invErr.message);
+        }
+
         while (Date.now() - startTime < MAX_RUN_MS) {
             // pollMessages trả về số đơn đang ở trạng thái waiting
             const waitingCount = await mgr.pollMessages();

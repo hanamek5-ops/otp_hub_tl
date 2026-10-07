@@ -989,6 +989,10 @@
                         <span class="method-tag method-get">GET</span>
                         <span>Danh Sách Dịch Vụ</span>
                     </button>
+                    <button class="endpoint-btn" onclick="switchEndpoint('rate')">
+                        <span class="method-tag method-get">GET</span>
+                        <span>Tỉ Giá USDT/VND</span>
+                    </button>
                 </div>
 
                 <!-- Main Content Area -->
@@ -1156,6 +1160,18 @@
                 node: `const axios = require('axios');\n\nasync function cancelSession() {\n  const res = await axios.get('${baseUrl}/session/cancel', {\n    params: { requestId: 'SES4fa2b7194', token: 'YOUR_API_KEY' }\n  });\n  console.log(res.data);\n}\ncancelSession();`,
                 php: `<?php\n$url = "${baseUrl}/session/cancel?requestId=SES4fa2b7194&token=YOUR_API_KEY";\n$response = file_get_contents($url);\nprint_r(json_decode($response, true));`,
                 response: `{\n  "status_code": 200,\n  "message": "Hủy yêu cầu thành công, số tiền đã được hoàn lại vào ví",\n  "data": {\n    "ID": "SES4fa2b7194",\n    "Status": 2,\n    "Refunded": 5000,\n    "Balance": 150000\n  }\n}`
+            },
+            rate: {
+                title: "6. Tỉ Giá USDT/VND Realtime",
+                desc: "Trả về tỉ giá USDT/VND hiện tại (cập nhật mỗi 60 giây từ Binance P2P). Không cần xác thực (Public).",
+                method: "GET",
+                path: "/api/exchange-rate",
+                params: [],
+                curl: `curl -X GET "${baseUrl}/api/exchange-rate"`,
+                python: `import requests\n\nurl = "${baseUrl}/api/exchange-rate"\nres = requests.get(url)\nprint(res.json())`,
+                node: `const axios = require('axios');\n\nasync function getExchangeRate() {\n  const res = await axios.get('${baseUrl}/api/exchange-rate');\n  console.log(res.data);\n}\ngetExchangeRate();`,
+                php: `<?php\n$url = "${baseUrl}/api/exchange-rate";\n$response = file_get_contents($url);\nprint_r(json_decode($response, true));`,
+                response: `{\n  "success": true,\n  "data": {\n    "rate": 26109\n  }\n}`
             }
         };
 
@@ -1164,7 +1180,7 @@
 
         function switchEndpoint(key) {
             currentActiveEndpoint = key;
-            const keys = ['request', 'session', 'cancel', 'balance', 'services'];
+            const keys = ['request', 'session', 'cancel', 'balance', 'services', 'rate'];
             document.querySelectorAll('.endpoint-btn').forEach((btn, idx) => {
                 btn.classList.toggle('active', keys[idx] === key);
             });
@@ -1184,14 +1200,20 @@
             const data = endpointData[currentActiveEndpoint];
             const container = document.getElementById('docsMainContent');
             
-            let paramsHtml = data.params.map(p => `
+            let paramsHtml = data.params.length > 0 ? data.params.map(p => `
                 <tr>
                     <td><strong>${p.name}</strong></td>
                     <td><code>${p.type}</code></td>
                     <td>${p.req ? '<span class="badge-req">Bắt buộc</span>' : '<span class="badge-opt">Tùy chọn</span>'}</td>
                     <td>${p.desc}</td>
                 </tr>
-            `).join('');
+            `).join('') : `
+                <tr>
+                    <td colspan="4" style="text-align: center; color: var(--text-dim); padding: 18px;">
+                        <i>Không yêu cầu tham số (Public Endpoint — Không cần API Key)</i>
+                    </td>
+                </tr>
+            `;
 
             container.innerHTML = `
                 <div class="doc-header">
